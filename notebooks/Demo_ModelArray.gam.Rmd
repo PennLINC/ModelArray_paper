@@ -142,7 +142,7 @@ element.subset <- 1:num.fixels
 
 # Start to run ModelArray.gam():
 ```{r}
-cat("formula is: ")   # BETTER TO USE FX=FALSE TO INCLUDE PENALTIES BUT ARGUES WITH BART AT SLACKKK
+cat("formula is: ")   
 formula
 cat(paste0("number of fixels to analyze = ", toString(num.fixels), "\n"))
 
