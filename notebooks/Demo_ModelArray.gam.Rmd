@@ -6,6 +6,7 @@ output: html_document
 # set ups
 rm(list = ls())
 relative_path_ModelArray <- "../../ModelArray"
+relative_path_data <- "../../data"
 
 # the working directory of this Demo is where it locates
 
@@ -42,8 +43,8 @@ if (flag_library_what == "automatically") {
 }
 
 
-flag_whichdataset <- "test_n50"   # "test_n50" or "josiane"
-num.subj <- 50  # [integer]   
+flag_whichdataset <- "test_n25x2"   # "test_n50" or "test_n25x2" or "josiane"
+num.subj <- 25  # [integer]     # 25 for "test_n25x2"
 num.fixels <- 100  # 0 = full 
 flag_which_subset <- ""
 flag_where <- "vmware"   # "CUBIC" or "vmware"
@@ -69,6 +70,13 @@ if (flag_whichdataset == "test_n50") {
   fn_csv <- file.path(relative_path_ModelArray, "inst/extdata/n50_cohort.csv")
   
   scalar = c("FD")
+  
+} else if (flag_whichdataset == "test_n25x2") {
+  fn <- file.path(relative_path_data, "data_forCircleCI_n25x2", "fixels_withSubjID.h5")
+  fn.output <- file.path(relative_path_data, "data_forCircleCI_n25x2", "fixels_withSubjID_output.h5")
+  fn_csv <- file.path(relative_path_data, "data_forCircleCI_n25x2", "n25x2_cohort.csv")
+  scalar_all <- c("FD","FD_fake")  
+  scalar <- "FD_fake"
   
 } else if (flag_whichdataset == "josiane") {
   if (flag_where == "vmware") {
@@ -107,6 +115,12 @@ if (dim(scalars(modelarray)[[scalar]])[2] != num.subj) {
 We set up for performing GAM:
 ```{r}
 phenotypes <- read.csv(fn_csv)
+if (flag_whichdataset == "test_n25x2") {
+  # filter phenotypes data.frame for only one scalar:
+  phenotypes <- phenotypes[phenotypes$scalar_name == scalar,]
+}
+
+
 # check # subjects matches:
 if (nrow(phenotypes) != num.subj) {
   stop(paste0("number of subjects in .csv = ", toString(nrow(phenotypes)), ", is not equal to entered number = ", toString(num.subj)))
@@ -114,6 +128,8 @@ if (nrow(phenotypes) != num.subj) {
 
 if (flag_whichdataset == "test_n50") {
   formula <- FD ~ s(age, k=4, fx=TRUE) + sex        # ++++ to do: add motion quantification   # FD ~ s(age, k=4) + sex  # FD ~ s(age) + sex
+} else if (flag_whichdataset == "test_n25x2") {
+  formula <- as.formula(paste0(scalar, "~ s(age, k=4, fx=TRUE) + sex"))
 } else if (flag_whichdataset == "josiane") {
   formula <- FDC ~ s(Age, k=4, fx = TRUE) + sex
 }
@@ -121,7 +137,7 @@ if (flag_whichdataset == "test_n50") {
 if (num.fixels == 0) {
   num.fixels <- dim(scalars(modelarray)[[scalar]])[1]
 }
-grid.subset <- 1:num.fixels  
+element.subset <- 1:num.fixels  
 ```
 
 # Start to run ModelArray.gam():
@@ -132,7 +148,7 @@ cat(paste0("number of fixels to analyze = ", toString(num.fixels), "\n"))
 
 # defaults:
 mygam <- ModelArray.gam(formula = formula, data = modelarray, phenotypes = phenotypes, scalar = scalar, 
-                           grid.subset = grid.subset, 
+                           element.subset = element.subset, 
                         eff.size.term.index = c(1),  
                         n_cores=2, pbar = TRUE)
 mygam[1:6, ]
@@ -143,7 +159,7 @@ colnames(mygam)
 # full.outputs = TRUE:
 ```{r}
 mygam_allOutputs <- ModelArray.gam(formula = formula, data = modelarray, phenotypes = phenotypes, scalar = scalar, 
-                           grid.subset = grid.subset, 
+                           element.subset = element.subset, 
                            full.outputs = TRUE,
                         eff.size.term.index = c(1),   # eff.size's request is separated from full.outputs (user may not know it may run for an unexpected long time)
                         correct.p.value.smoothTerms = c("fdr", "bonferroni"),   # this is also separated from full.outputs
@@ -156,9 +172,18 @@ colnames(mygam_allOutputs)
 analysis_name <- "gam_allOutputs"
 writeResults(fn.output, df.output = mygam_allOutputs, analysis_name=analysis_name, overwrite=TRUE)
 
+# # you can write another analysis:
+# analysis_name_another <- "gam_allOutputs_duplicated"
+# writeResults(fn.output, df.output = mygam_allOutputs, analysis_name=analysis_name_another, overwrite=TRUE)
+
+
 # # read and see
-# modelarray_new <- ModelArray(fn.output, scalar_types = scalar, analysis_names = analysis_name)
-# modelarray_new@results$gam_allOutputs
+modelarray_new <- ModelArray(fn.output, scalar_types = scalar, analysis_names = c(analysis_name))
+modelarray_new@results$gam_allOutputs
+
+# modelarray_new <- ModelArray(fn.output, scalar_types = scalar, analysis_names = c(analysis_name,analysis_name_another))
+# modelarray_new@results[[analysis_name_another]]
+
 ```
 # check out the results of PNC dataset
 ```{r}
