@@ -37,16 +37,16 @@ fi
 foldername_jobid="${foldername_jobid}.s-${sample_sec}sec"
 
 if [  "$run_where" = "sge" ]; then
-        folder_benchmark="/cbica/projects/fixel_db/ModelArray_benchmark"
+        folder_benchmark="/cbica/projects/fixel_db/FixelArray_benchmark"
         
         echo "adding JOB_ID to foldername"
         foldername_jobid="${foldername_jobid}.${JOB_ID}"
 
 elif [[ "$run_where" == "interactive"   ]]; then
-        folder_benchmark="/cbica/projects/fixel_db/ModelArray_benchmark"
+        folder_benchmark="/cbica/projects/fixel_db/FixelArray_benchmark"
 
 elif [[ "$run_where" == "vmware"   ]]; then
-        folder_benchmark="/home/chenying/Desktop/fixel_project/ModelArray_benchmark"
+        folder_benchmark="/home/chenying/Desktop/fixel_project/FixelArray_benchmark"
 
         echo "adding date to foldername"
         foldername_jobid="${foldername_jobid}.${date}"
