@@ -1,0 +1,60 @@
+---
+title: "test matching source files"
+output: html_document
+---
+
+this is to match source file names from .h5 and phenotypes data.frame
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+rm(list=ls())
+set.seed(7)
+library(testthat)
+
+phenotypes <- read.csv("../../ModelArray/inst/extdata/n50_cohort.csv")
+num.subj <- 50
+c <- rnorm(num.subj)
+# mimic values of a fixel extracted from e.g. scalars(modelarray)[["FD"]][i_fixel,]
+names(c) <- paste0("FD/sub",as.character(c(1:num.subj)), "_fd.mif")
+c
+
+```
+
+```{r}
+reorder_idx <- sample(1:num.subj)
+# there should not be duplicated values
+expect_equal(length(reorder_idx),   
+             length(unique(reorder_idx)))
+phenotypes
+```
+
+```{r}
+reordered_phenotypes <- phenotypes[reorder_idx, ]
+reordered_phenotypes
+```
+
+Add c (mimicing analyseOneElement.lm(): add data from .h5 file)
+```{r}
+new1 <- reordered_phenotypes
+new1$c <- c
+new1
+expect_equal(unname(new1$c),
+            unname(c))
+# this means that c was added regardless of row name of reordered_phenotypes, or c's names
+```
+
+
+Just be safer to reset the row index:
+```{r}
+new2 <- reordered_phenotypes
+row.names(new2) <- NULL    # reset the row names back to 1,2,3...
+new2$c <- c
+new2
+expect_equal(unname(new2$c),
+            unname(c))
+```
