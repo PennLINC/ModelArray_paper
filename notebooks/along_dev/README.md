@@ -1,0 +1,2 @@
+Files in this folder: \
+tests and notebooks along the software development. They may not up-to-date (e.g. argument names changed in functions; directory should be changed after moved to current repository).
