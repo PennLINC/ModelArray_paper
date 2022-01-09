@@ -72,6 +72,7 @@ parent_id=$!  # get the pid of last execuated command
 echo "parent id = ${parent_id}"
 
 if [[ "$run_memoryProfiler" == "TRUE"  ]]; then
+    # for MRtrix's fixelcfestats: there will only one process (no child processes) with n_cores*100% usage of CPU --> c=1
 	bash myMemoryProfiler.sh -P ${parent_id} -c 1 -s ${sample_sec} -o ${folder_output} > ${fn_myMemProf} 2>&1
 else
 	echo "not to call myMemoryProfiler.sh to profile memory"
