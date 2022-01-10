@@ -1,4 +1,7 @@
 #!/bin/bash
+
+source ../benchmarks/config.txt  # flag_where and commitSHA
+
 while getopts s:D:f:S:c:w:o:M: flag
 do
 	case "${flag}" in
@@ -30,17 +33,18 @@ echo "output_folder: $output_folder"
 #singularity instance list
 #singularity exec instance://myr_r4.1.0forModelArray Rscript /cbica/projects/fixel_db/ModelArray/notebooks/memoryProfiling_ModelArray.lm.R
 
-if [[ "$run_where" == "vmware" ]]
-then
-	cmd_memrec="perl memrec"
-	# cmd_memrec="perl /home/chenying/Desktop/Apps/memrec/pull_from_github/memrec/bin/memrec.pl"
-	# cmd_memrec="/home/chenying/Desktop/Apps/wss-master/wss.pl"
-else
-	cmd_memrec="memrec"
-fi
+# if [[ "$run_where" == "vmware" ]]
+# then
+# 	cmd_memrec="perl memrec"
+# 	# cmd_memrec="perl /home/chenying/Desktop/Apps/memrec/pull_from_github/memrec/bin/memrec.pl"
+# 	# cmd_memrec="/home/chenying/Desktop/Apps/wss-master/wss.pl"
+# else
+# 	cmd_memrec="memrec"
+# fi
 
-filename_memrec_output="memprofile.inMB.every${d_memrec}sec"
-fn_memrec_output="${output_folder}/${filename_memrec_output}"
+# filename_memrec_output="memprofile.inMB.every${d_memrec}sec"
+# fn_memrec_output="${output_folder}/${filename_memrec_output}"
+
 fn_R_output="${output_folder}/Routput.txt"
 fn_myMemProf="${output_folder}/output_myMemoryProfiler.txt"
 
@@ -56,9 +60,9 @@ echo ""
 # echo $cmd
 # $cmd
 
-cmd="Rscript ./memoryProfiling_ModelArray.lm.R $dataset_name $num_fixels $num_subj $num_cores > ${fn_R_output}  2>&1 &"
+cmd="Rscript ./memoryProfiling_ModelArray.lm.R $dataset_name $num_fixels $num_subj $num_cores ${commitSHA} > ${fn_R_output}  2>&1 &"
 echo $cmd
-Rscript ./memoryProfiling_ModelArray.lm.R $dataset_name $num_fixels $num_subj $num_cores > ${fn_R_output}  2>&1 &     # cannot run at background if using $cmd to execuate..
+Rscript ./memoryProfiling_ModelArray.lm.R $dataset_name $num_fixels $num_subj $num_cores ${commitSHA} > ${fn_R_output}  2>&1 &     # cannot run at background if using $cmd to execuate..
 
 parent_id=$!  # get the pid of last execuated command
 

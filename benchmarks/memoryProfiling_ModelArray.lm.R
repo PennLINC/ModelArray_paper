@@ -14,6 +14,7 @@ flag_whichdataset <- args[1]   # "test_n50" or "josiane"
 num.fixels <- as.integer(args[2])  # if ==0, set as full set
 num.subj <- as.integer(args[3])  
 num.cores <- as.integer(args[4])
+commitSHA <- as.character(args[5])   # github commit SHA for installing ModelArray
 
 flag_library_what <- "automatically"   # "automatically" or "manually"
 # TODO: different variables and formula!
@@ -31,18 +32,20 @@ message(paste0("number of cores = "), toString(num.cores))
 ### basics #####
 flag_where <- "vmware"   # "CUBIC" or "vmware"
 if (flag_where =="CUBIC") {
-  setwd("/cbica/projects/fixel_db/ModelArray/notebooks")
+  setwd("/cbica/projects/fixel_db/ModelArray_paper/benchmarks")
 } else if (flag_where == "vmware") {
-  setwd("/home/chenying/Desktop/fixel_project/ModelArray/notebooks")
+  setwd("/home/chenying/Desktop/fixel_project/ModelArray_paper/benchmarks")
 }
 
 if (flag_library_what == "automatically") {
-  message("Please make sure that github repository 'ModelArray' has been updated: local files have been pushed!")
+  message("Please make sure that github repository 'ModelArray' has been updated: local files have been pushed! And commitSHA is up-to-date!")
   message("run: devtools::install_github() to install ModelArray package")
   library(devtools)
-  devtools::install_github("PennLINC/ModelArray",
-                           upgrade = "never")   # not to upgrade package dependencies
-                           #TODO: add commitSHA, and force=TRUE!!! +++++++++++++
+  message(paste0("commitSHA: ", commitSHA))
+
+  devtools::install_github(paste0("PennLINC/ModelArray@", commitSHA),   # install_github("username/repository@commitSHA")
+                           upgrade = "never",  # not to upgrade package dependencies
+                           force=TRUE)   # force re-install ModelArray again
   library(ModelArray)
   
 } else if (flag_library_what == "manually") {
@@ -65,6 +68,12 @@ if (flag_library_what == "automatically") {
 }
 
 
+# save the config in R:
+message("sessionInfo() as below:")
+sessionInfo()  # including R versoin, attached packages version
+message(" ")
+
+
 # prev_m <- 0; m <- mem_used(); m - prev_m
 
 # flag_whichdataset <- "test_n50"   # "test_n50" or "josiane"
@@ -84,7 +93,6 @@ if (flag_whichdataset == "test_n50") {
   }
 
   fn_csv <- "../inst/extdata/n50_cohort.csv"
-  colname.subjid <- "subject_id"
   
   scalar = c("FD")
 
@@ -99,7 +107,6 @@ if (flag_whichdataset == "test_n50") {
     fn_csv <- paste0("../../data/data_from_josiane/df_example_n", toString(num.subj), ".csv")
   }
   
-  colname.subjid <- "bblid"
   scalar = c("FDC")
 }
 
@@ -145,7 +152,7 @@ if (flag_whichdataset == "test_n50") {
   formula <- FDC ~ Age
 }
 
-full.outputs <- FALSE  # default: FALSE
+full.outputs <- TRUE  # default: FALSE  # changed to TRUE: only when true it outputs std.err (related: MRtrix will genearte std_dev.mif)
 # var.terms <- c("estimate", "statistic", "p.value")   # list of columns to keep  | , "std.error","statistic"
 # var.model <- c("adj.r.squared", "p.value")
 
@@ -166,10 +173,9 @@ tic("Running ModelArray.lm()")
 
 lm.outputs <- ModelArray.lm(formula, modelarray, phenotypes, scalar = scalar, element.subset = element.subset,
                              full.outputs = full.outputs,  
-                            colname.subjid = colname.subjid,
                              # var.terms = var.terms, var.model = var.model,
-                             # correct.p.value.terms = "fdr",
-                             # correct.p.value.model = c("fdr"),
+                             correct.p.value.terms = "fdr",   # also save any fdr correction
+                             correct.p.value.model = c("fdr"),
                              verbose = TRUE, pbar = FALSE, n_cores = num.cores)  # , na.action="na.fail"
 
 toc(log = TRUE)  # pairing tic of "Running ModelArray.lm()"
