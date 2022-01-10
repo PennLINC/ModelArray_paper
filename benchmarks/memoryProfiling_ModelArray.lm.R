@@ -42,9 +42,9 @@ if (flag_library_what == "automatically") {
   library(devtools)
   devtools::install_github("PennLINC/ModelArray",
                            upgrade = "never")   # not to upgrade package dependencies
+                           #TODO: add commitSHA, and force=TRUE!!! +++++++++++++
   library(ModelArray)
   
-
 } else if (flag_library_what == "manually") {
   message("run: source several R scripts and library some R packages...")
   source("../../ModelArray/R/ModelArray_Constructor.R")

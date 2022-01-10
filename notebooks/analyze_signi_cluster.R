@@ -318,6 +318,6 @@ f_avgFixel + geom_text(x=x, y=y, size = 6,
                        label=paste0(txt.s_Age.p.value_avgFixel, "\n",
                                     "s(Age)'s effect size = ", sprintf("%.3f",eff.size.avgFixel)))
 
-# NOTE: as there is more sex=2 than sex=1, and sex is numeric, so the median(df[,sex]) = 2, the gam curve is fitted upon sex=2
+# NOTE: as there is more sex=2 than sex=1, and sex is numeric, so the median(df[,sex]) = 2, the gam curve is fitted upon sex=2, i.e. female (2)
 # TODO: check how many fixels' model: sex is significant
 

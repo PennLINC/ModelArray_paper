@@ -17,6 +17,7 @@ done
 date
 
 echo "sampling every __ sec when memory profiling: $sample_sec"
+echo "commitSHA: ${commitSHA}"   # TODO: source config.txt
 echo "dataset name: $dataset_name"
 echo "num_fixels: $num_fixels"
 echo "num_subj: $num_subj"

@@ -9,6 +9,7 @@ source(file.path(relative_path_ModelArray, "R/analyse.R"))
 
 suppressMessages(library(dplyr))
 library(broom)
+library(dplyr)
 library(rhdf5)
 library(hdf5r)
 library(tictoc)
@@ -16,8 +17,13 @@ library(testthat)
 
 h5closeAll()
 
+flag_where <- "vmware"  # "vmware" or "cubic"
+if (flag_where == "vmware") {
+  folder_josiane <- "/home/chenying/Desktop/fixel_project/data/data_from_josiane"
+} else if (flag_where == "cubic") {
+  folder_josiane <- "/cbica/projects/fixel_db/dropbox/data_from_josiane"  
+}
 
-folder_josiane <- "/cbica/projects/fixel_db/dropbox/data_from_josiane"
 
 ### check .csv ##### 
 df_example <- read.csv(paste0(folder_josiane, "/", "df_example_n938.csv"))
@@ -154,8 +160,82 @@ motion.n938 <- motion.n938[order(motion.n938$bblid),]   # sort by bblid
 row.names(motion.n938) <- NULL   # reset the row name index
 
 expect_equal(dim(motion.n938), c(938,2))
-expect_equal(sum(is.na(motion.n938$dti64MeanRelRMS)), 0)  # is there any NA in the values. Should be no.
+expect_equal(sum(is.na(motion.n938[[metric.motion]])), 0)  # is there any NA in the values. Should be no.
 
 
-# TODO: for each df_example file (for different # of subjects), get subj ids, and extract corresponding motion metric, sort by bblid (and reset row name) - see n=938 above as an example
+# Now, save for each # of subjects:
+# for each df_example file (for different # of subjects), get subj ids, and extract corresponding motion metric, sort by bblid (and reset row name) - see n=938 above as an example
 # then combine motion table with df_example table, and overwrite df_example.csv
+
+list_num_subj <- c(50,100,200,300,500,750,938)   #c(30,50,100,200,300,500,750,938) 
+for (num_subj in list_num_subj) {
+  message(paste0("number of subjects = ",toString(num_subj)))
+  
+  fn.csv <- file.path(folder_josiane, paste0("df_example_n", toString(num_subj),".csv"))
+  df_example <- read.csv(fn.csv)
+  
+  if (metric.motion %in% colnames(df_example)) {  # remove existing motion quantification 
+    warning("motion quantification already exists in df_example.csv; deleting this column....")
+    df_example <- subset(df_example, select=-c(metric.motion))
+  }
+  
+  
+  motion.needed <- motion.allPNC[motion.allPNC$bblid %in% df_example$bblid,  # only subjects in df_example
+                                 c("bblid", metric.motion)]  
+  motion.needed <- motion.needed[order(motion.needed$bblid),]   # sort by bblid
+  row.names(motion.needed) <- NULL   # reset the row name index
+  
+  # merge:
+  final_df_example <- merge(df_example, motion.needed, by="bblid")
+  testthat::expect_equal(nrow(final_df_example), nrow(df_example))   # number of subjects should not change!
+  testthat::expect_equal(motion.needed$bblid, df_example$bblid)
+  testthat::expect_equal(motion.needed[[metric.motion]], final_df_example[[metric.motion]])
+  testthat::expect_equal(sum(is.na(final_df_example[[metric.motion]])), 0)  # is there any NA in the values. Should be no.
+  
+  # save:
+  write.csv(final_df_example, file = fn.csv, row.names = FALSE)
+}
+
+
+### add source files as column names in .h5 files and .csv - after updates on ModelArray #####
+list_num_subj <- c(50,100,200,300,500,750,938)   #c(30,50,100,200,300,500,750,938) 
+for (num_subj in list_num_subj) {
+  message(paste0("number of subjects = ",toString(num_subj)))
+  
+  fn.h5 <- file.path(folder_josiane, paste0("ltn_FDC_n", toString(num_subj),".h5"))
+  fn.csv <- file.path(folder_josiane, paste0("df_example_n", toString(num_subj),".csv"))
+  
+  df_example <- read.csv(fn.csv)
+  
+  ## update on .csv file: add columns names of "scalar_name" and "source_file"
+  # note: scalar_name and scalar_mif was in ltn_FDC.csv; but now we are using df_example
+  
+  # check if there are columns of scalar_name and source_file:
+  if ("scalar_name" %in% colnames(df_example)) {
+    # skip
+  } else {
+    df_example[["scalar_name"]] <- rep("FDC", nrow(df_example))
+  }
+  
+  if ("source_file" %in% colnames(df_example)) {
+    # skip
+  } else {
+    df_example <- df_example %>% mutate(source_file = paste0("FDC/fdc_10_smoothed_10fwhm_new/sub-", bblid, ".mif"))
+  }
+  
+  # save:
+  write.csv(df_example, file = fn.csv, row.names = FALSE)
+  
+  
+  ## update on .h5 file: add attribute
+  # h5ls(fn.h5, all=TRUE)   # see column "num_attrs": if any attributes associated
+  fid <- hdf5r::H5File$new(fn.h5, mode="a")    # open; "a": creates a new file or opens an existing one for read/write
+  scalars.grp <- fid$open("scalars")
+  scalars.specific.grp <- scalars.grp$open("FDC")
+  
+  hdf5r::h5attr(scalars.specific.grp[["values"]], "column_names") <- df_example$source_file 
+  
+  fid$close_all()
+
+}
+
