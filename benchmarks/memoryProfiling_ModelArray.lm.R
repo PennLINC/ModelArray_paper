@@ -33,7 +33,14 @@ message(paste0("number of cores = "), toString(num.cores))
 flag_where <- "vmware"   # "CUBIC" or "vmware"
 if (flag_where =="CUBIC") {
   setwd("/cbica/projects/fixel_db/ModelArray_paper/benchmarks")
+  # TODO: also print ModelArray_paper's commitSHA as below...
 } else if (flag_where == "vmware") {
+  # print current repository's commit SHA:
+  setwd("/home/chenying/Desktop/fixel_project/ModelArray_paper")
+  cmd <- "git rev-parse HEAD"
+  message("ModelArray_paper commit SHA ($ git rev-parse HEAD): ")
+  system(cmd)
+
   setwd("/home/chenying/Desktop/fixel_project/ModelArray_paper/benchmarks")
 }
 
