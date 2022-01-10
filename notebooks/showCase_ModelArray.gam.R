@@ -28,6 +28,13 @@ commitSHA <- as.character(args[6])   # github commit SHA for installing ModelArr
 
 flag_library_what <- "automatically"   # "automatically" or "manually"
 
+## print ModelArray_paper's commitSHA:
+cmd <- "git rev-parse HEAD"
+message("ModelArray_paper commit SHA ($ git rev-parse HEAD): ")
+system(cmd)
+
+## install ModelArray:
+
 if (flag_library_what == "automatically") {
   message("Please make sure that github repository 'ModelArray' has been updated: local files have been pushed! And commitSHA is up-to-date!")
   message("run: devtools::install_github() to install ModelArray package")
