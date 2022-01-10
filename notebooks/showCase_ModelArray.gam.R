@@ -2,7 +2,7 @@
 # HOW TO RUN:
 # in bash, same folder as this current file:
 # $ Rscript ./memoryProfiling_ModelArray.gam.R  > xxx.txt 2>&1 &
-
+# or, using "call_showCase_ModelArray.gam.sh"
 
 # set ups
 rm(list = ls())
@@ -30,16 +30,15 @@ flag_library_what <- "automatically"   # "automatically" or "manually"
 
 if (flag_library_what == "automatically") {
   message("Please make sure that github repository 'ModelArray' has been updated: local files have been pushed! And commitSHA is up-to-date!")
-  message("run: devtools::install() to install ModelArray package")
+  message("run: devtools::install_github() to install ModelArray package")
   library(devtools)
   message(paste0("commitSHA: ", commitSHA))
 
   devtools::install_github(paste0("PennLINC/ModelArray@", commitSHA),   # install_github("username/repository@commitSHA")
                            upgrade = "never")   # not to upgrade package dependencies
+                           # TODO: consider adding force=TRUE ++++++
   library(ModelArray)
-  
-  library(tictoc)
-  
+    
 } else if (flag_library_what == "manually") {
   
   message("run: source several R scripts and library some R packages...")
@@ -152,7 +151,7 @@ toc(log=TRUE)    # pairing tic of "time before ModelArray.gam()"
 
 ### running on real data #####
 tic("Running ModelArray.gam()")
-# +++++++++++++++ NEXT TIME: sex --> ordered factor, and use oSex in formula! (this may make the plots - e.g. Bart's function more making sense? as there will be a reference level of female or male)++++++++++++++++++++++++++
+# +++++++++++++++ optional: NEXT TIME: sex --> ordered factor, and use oSex in formula! (this may make the plots - e.g. Bart's function more making sense? as there will be a reference level of female or male)++++++++++++++++++++++++++
 gam_real <- ModelArray.gam(formula = formula, data = fixelarray, phenotypes = phenotypes, scalar = scalar, 
                            element.subset = element.subset, full.outputs = TRUE,
                            eff.size.term.index = c(1),
