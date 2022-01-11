@@ -1,8 +1,6 @@
 #!/bin/bash
 
-source ../benchmarks/config.txt  # flag_where and commitSHA
-
-while getopts s:D:f:S:c:w:o:M: flag
+while getopts s:D:f:S:c:w:o:M:A:a: flag
 do
 	case "${flag}" in
 		s) sample_sec=${OPTARG};;   # for wss.pl
@@ -14,13 +12,15 @@ do
 		w) run_where=${OPTARG};;    # "sge" or "interactive" or "vmware" or "dopamine"
 		o) output_folder=${OPTARG};;  # generated in wrapper.sh
 		M) run_memoryProfiler=${OPTARG};;   # TRUE or FALSE
+		A) ModelArray_commitSHA=${OPTARG};;
+		a) ModelArrayPaper_commitSHA=${OPTARG};;
 	esac
 done
 
 date
 
 echo "sampling every __ sec when memory profiling: $sample_sec"
-echo "commitSHA: ${commitSHA}"   # TODO: source config.txt
+echo "ModelArray_commitSHA: ${ModelArray_commitSHA}"  
 echo "dataset name: $dataset_name"
 echo "num_fixels: $num_fixels"
 echo "num_subj: $num_subj"
@@ -60,9 +60,9 @@ echo ""
 # echo $cmd
 # $cmd
 
-cmd="Rscript ./memoryProfiling_ModelArray.lm.R $dataset_name $num_fixels $num_subj $num_cores ${commitSHA} > ${fn_R_output}  2>&1 &"
+cmd="Rscript ./memoryProfiling_ModelArray.lm.R $dataset_name $num_fixels $num_subj $num_cores ${ModelArray_commitSHA} ${ModelArray_paper_commitSHA} > ${fn_R_output}  2>&1 &"
 echo $cmd
-Rscript ./memoryProfiling_ModelArray.lm.R $dataset_name $num_fixels $num_subj $num_cores ${commitSHA} > ${fn_R_output}  2>&1 &     # cannot run at background if using $cmd to execuate..
+Rscript ./memoryProfiling_ModelArray.lm.R $dataset_name $num_fixels $num_subj $num_cores ${ModelArray_commitSHA} ${ModelArray_paper_commitSHA} > ${fn_R_output}  2>&1 &     # cannot run at background if using $cmd to execuate..
 
 parent_id=$!  # get the pid of last execuated command
 

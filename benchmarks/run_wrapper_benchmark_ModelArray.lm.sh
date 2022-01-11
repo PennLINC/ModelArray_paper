@@ -26,8 +26,42 @@ date
 
 # wait_r_end 600   # in seconds
 # date
-# cmd="bash wrapper_benchmark_ModelArray.lm.sh -s 1 -D josiane -f 0 -S 938 -c 2 -w vmware -M TRUE"
+# cmd="bash wrapper_benchmark_ModelArray.lm.sh -s 1 -D josiane -f 0 -S 100 -c 4 -w vmware -M TRUE"
 # echo $cmd
 # $cmd
 # date
 
+# wait_r_end 600   # in seconds
+# date
+# cmd="bash wrapper_benchmark_ModelArray.lm.sh -s 1 -D josiane -f 0 -S 300 -c 4 -w vmware -M TRUE"
+# echo $cmd
+# $cmd
+# date
+
+# wait_r_end 600   # in seconds
+# date
+# cmd="bash wrapper_benchmark_ModelArray.lm.sh -s 1 -D josiane -f 0 -S 500 -c 4 -w vmware -M TRUE"
+# echo $cmd
+# $cmd
+# date
+
+# wait_r_end 600   # in seconds
+# date
+# cmd="bash wrapper_benchmark_ModelArray.lm.sh -s 1 -D josiane -f 0 -S 750 -c 4 -w vmware -M TRUE"
+# echo $cmd
+# $cmd
+# date
+
+# wait_r_end 600   # in seconds
+# date
+# cmd="bash wrapper_benchmark_ModelArray.lm.sh -s 1 -D josiane -f 0 -S 938 -c 4 -w vmware -M TRUE"
+# echo $cmd
+# $cmd
+# date
+
+# wait_r_end 600   # in seconds
+# date
+# cmd="bash wrapper_benchmark_ModelArray.lm.sh -s 1 -D josiane -f 0 -S 30 -c 3 -w vmware -M TRUE"
+# echo $cmd
+# $cmd
+# date

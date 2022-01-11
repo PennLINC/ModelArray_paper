@@ -14,7 +14,8 @@ flag_whichdataset <- args[1]   # "test_n50" or "josiane"
 num.fixels <- as.integer(args[2])  # if ==0, set as full set
 num.subj <- as.integer(args[3])  
 num.cores <- as.integer(args[4])
-commitSHA <- as.character(args[5])   # github commit SHA for installing ModelArray
+ModelArray_commitSHA <- as.character(args[5])   # github commit SHA for installing ModelArray
+ModelArrayPaper_commitSHA <- as.character(args[6])  # record for commit SHA for ModelArray_paper
 
 flag_library_what <- "automatically"   # "automatically" or "manually"
 # TODO: different variables and formula!
@@ -24,6 +25,7 @@ message(paste0("which dataset: ", flag_whichdataset))
 message(paste0("number of fixels = "), toString(num.fixels))
 message(paste0("number of subjects = "), toString(num.subj))
 message(paste0("number of cores = "), toString(num.cores))
+message(paste0("ModelArray_paper's commitSHA = ", ModelArrayPaper_commitSHA))
 # message(paste0("class of arguments: ",class(flag_whichdataset), "; ", class(num.fixels), "; ", class(num.subj), "; ", class(num.cores)))
 
 
@@ -33,13 +35,8 @@ message(paste0("number of cores = "), toString(num.cores))
 flag_where <- "vmware"   # "CUBIC" or "vmware"
 if (flag_where =="CUBIC") {
   setwd("/cbica/projects/fixel_db/ModelArray_paper/benchmarks")
-  # TODO: also print ModelArray_paper's commitSHA as below...
+
 } else if (flag_where == "vmware") {
-  # print current repository's commit SHA:
-  setwd("/home/chenying/Desktop/fixel_project/ModelArray_paper")
-  cmd <- "git rev-parse HEAD"
-  message("ModelArray_paper commit SHA ($ git rev-parse HEAD): ")
-  system(cmd)
 
   setwd("/home/chenying/Desktop/fixel_project/ModelArray_paper/benchmarks")
 }
@@ -48,9 +45,9 @@ if (flag_library_what == "automatically") {
   message("Please make sure that github repository 'ModelArray' has been updated: local files have been pushed! And commitSHA is up-to-date!")
   message("run: devtools::install_github() to install ModelArray package")
   library(devtools)
-  message(paste0("commitSHA: ", commitSHA))
+  message(paste0("ModelArray's commitSHA: ", ModelArray_commitSHA))
 
-  devtools::install_github(paste0("PennLINC/ModelArray@", commitSHA),   # install_github("username/repository@commitSHA")
+  devtools::install_github(paste0("PennLINC/ModelArray@", ModelArray_commitSHA),   # install_github("username/repository@commitSHA")
                            upgrade = "never",  # not to upgrade package dependencies
                            force=TRUE)   # force re-install ModelArray again
   library(ModelArray)
@@ -159,7 +156,7 @@ if (flag_whichdataset == "test_n50") {
   formula <- FDC ~ Age
 }
 
-full.outputs <- TRUE  # default: FALSE  # changed to TRUE: only when true it outputs std.err (related: MRtrix will genearte std_dev.mif)
+full.outputs <- FALSE  # default: FALSE  
 # var.terms <- c("estimate", "statistic", "p.value")   # list of columns to keep  | , "std.error","statistic"
 # var.model <- c("adj.r.squared", "p.value")
 
@@ -181,8 +178,8 @@ tic("Running ModelArray.lm()")
 lm.outputs <- ModelArray.lm(formula, modelarray, phenotypes, scalar = scalar, element.subset = element.subset,
                              full.outputs = full.outputs,  
                              # var.terms = var.terms, var.model = var.model,
-                             correct.p.value.terms = "fdr",   # also save any fdr correction
-                             correct.p.value.model = c("fdr"),
+                             #correct.p.value.terms = "fdr",   # also save any fdr correction
+                             #correct.p.value.model = c("fdr"),
                              verbose = TRUE, pbar = FALSE, n_cores = num.cores)  # , na.action="na.fail"
 
 toc(log = TRUE)  # pairing tic of "Running ModelArray.lm()"

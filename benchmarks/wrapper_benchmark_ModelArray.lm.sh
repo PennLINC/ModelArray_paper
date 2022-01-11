@@ -5,6 +5,8 @@
 # bash wrapper_benchmark_ModelArray.lm.sh -s 1 -D josiane -f 0 -S 30 -c 2 -w vmware -M TRUE
 # qsub -l h_vmem=30G wrapper_benchmark_ModelArray.lm.sh -s 1 -D test_n50 -f 100 -S 100 -c 2 -w sge -M TRUE   # this will add ${JOB_ID} to foldername; run at interactive node to determine the memory requirements... # tried 20G, did not run..
 
+source ../benchmarks/config.txt  # flag_where and ModelArray_commitSHA
+
 while getopts s:D:f:S:c:w:O:M: flag
 do
         case "${flag}" in
@@ -25,7 +27,13 @@ echo "JOB_ID = ${JOB_ID}"
 printf -v date '%(%Y%m%d-%H%M%S)T' -1   # $date, in YYYYmmdd-HHMMSS
 echo "date variable: ${date}"
 
-foldername_jobid="lm.${dataset_name}.nfixel-${num_fixels}.nsubj-${num_subj}.ncore-${num_cores}.${run_where}"
+ModelArray_commitSHA_short=${ModelArray_commitSHA:0:7}  # first 7 characters in SHA
+
+ModelArrayPaper_commitSHA=`git rev-parse HEAD`
+ModelArrayPaper_commitSHA_short=${ModelArrayPaper_commitSHA:0:7}  # first 7 characters in SHA
+
+foldername_jobid="MAsha-${ModelArray_commitSHA_short}.MAPsha-${ModelArrayPaper_commitSHA_short}."
+foldername_jobid+="lm.${dataset_name}.nfixel-${num_fixels}.nsubj-${num_subj}.ncore-${num_cores}.${run_where}"
 
 if [[ "$run_memoryProfiler" == "TRUE"  ]]; then
         foldername_jobid="${foldername_jobid}.runMemProfiler"  
@@ -72,4 +80,4 @@ fn_output_txt="${folder_jobid}/output.txt"
 # for memrec:
 # bash benchmark_ModelArray.lm.sh -d $d_memrec -D $dataset_name -f $num_fixels -s $num_subj -c $num_cores -w $run_where -o ${folder_jobid} > $fn_output_txt 2>&1
 # for wss:
-bash benchmark_ModelArray.lm.sh -s $sample_sec -D $dataset_name -f $num_fixels -S $num_subj -c $num_cores -w $run_where -o ${folder_jobid} -M ${run_memoryProfiler}  > $fn_output_txt 2>&1
+bash benchmark_ModelArray.lm.sh -s $sample_sec -D $dataset_name -f $num_fixels -S $num_subj -c $num_cores -w $run_where -o ${folder_jobid} -M ${run_memoryProfiler} -A ${ModelArray_commitSHA} -a ${ModelArrayPaper_commitSHA} > $fn_output_txt 2>&1
