@@ -19,7 +19,7 @@ function wait_r_end {
 
 wait_r_end 5   # in seconds
 date
-cmd="bash wrapper_benchmark_ModelArray.lm.sh -s 1 -D josiane -f 0 -S 30 -c 4 -w vmware -M TRUE"
+cmd="bash wrapper_benchmark_ModelArray.lm.sh -s 1 -D josiane -f 100 -S 30 -c 4 -w vmware -M TRUE"
 echo $cmd
 $cmd
 date

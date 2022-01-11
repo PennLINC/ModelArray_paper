@@ -21,6 +21,7 @@ date
 
 echo "sampling every __ sec when memory profiling: $sample_sec"
 echo "ModelArray_commitSHA: ${ModelArray_commitSHA}"  
+echo "ModelArrayPaper_commitSHA: ${ModelArrayPaper_commitSHA}" 
 echo "dataset name: $dataset_name"
 echo "num_fixels: $num_fixels"
 echo "num_subj: $num_subj"
@@ -60,9 +61,9 @@ echo ""
 # echo $cmd
 # $cmd
 
-cmd="Rscript ./memoryProfiling_ModelArray.lm.R $dataset_name $num_fixels $num_subj $num_cores ${ModelArray_commitSHA} ${ModelArray_paper_commitSHA} > ${fn_R_output}  2>&1 &"
+cmd="Rscript ./memoryProfiling_ModelArray.lm.R $dataset_name $num_fixels $num_subj $num_cores ${ModelArray_commitSHA} ${ModelArrayPaper_commitSHA} > ${fn_R_output}  2>&1 &"
 echo $cmd
-Rscript ./memoryProfiling_ModelArray.lm.R $dataset_name $num_fixels $num_subj $num_cores ${ModelArray_commitSHA} ${ModelArray_paper_commitSHA} > ${fn_R_output}  2>&1 &     # cannot run at background if using $cmd to execuate..
+Rscript ./memoryProfiling_ModelArray.lm.R $dataset_name $num_fixels $num_subj $num_cores ${ModelArray_commitSHA} ${ModelArrayPaper_commitSHA} > ${fn_R_output}  2>&1 &     # cannot run at background if using $cmd to execuate..
 
 parent_id=$!  # get the pid of last execuated command
 
