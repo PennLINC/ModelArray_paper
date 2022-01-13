@@ -112,7 +112,7 @@ timeSeriesPlot <- function(df, unit.time = "second", unit.memory = "MB",str.titl
 
 
 #' @param profiling.setup The expected setup when profiling: "devtools" or "source_library"
-#' @param roof.num.child The maximum number of child processes expected (useful when summarizing different number of cores)
+#' @param roof.num.child The maximum number of child processes expected (useful when summarizing different number of cores). The actual number of cores will be automatically detected from filename.
 #' @param sample_sec Sampling every _ seconds; if the folder includes it, assing "NULL" or not to assign value!
 
 summaryMemProfiling <- function(folder, profiling.setup = "devtools", roof.num.child =4, sample_sec=NULL) {
@@ -133,11 +133,11 @@ if (is.null(sample_sec)) {
 
 
 
-# CHECK IF USING DEVTOOLS::INSTALL() in Routput.txt
+# CHECK IF USING DEVTOOLS::INSTALL_GITHUB() in Routput.txt
 fn.Routput <- paste0(folder, "/Routput.txt")
 
 Routput <- readLines(fn.Routput)
-temp <- grep("run: devtools::install() to install ModelArray package", Routput, fixed=TRUE)
+temp <- grep("run: devtools::install_github() to install ModelArray package", Routput, fixed=TRUE)
 if (length(temp) == 0) {
   if (profiling.setup == "devtools") {
     stop("the profiling was not set up by devtools::install()!")
