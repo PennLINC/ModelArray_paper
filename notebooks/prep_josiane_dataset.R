@@ -1,11 +1,13 @@
 # preparation for Josiane's dataset
 
-relative_path_ModelArray <- "../../ModelArray"
+# relative_path_ModelArray <- "../../ModelArray"
+# 
+# source(file.path(relative_path_ModelArray, "R/ModelArray_Constructor.R"))
+# source(file.path(relative_path_ModelArray, "R/ModelArray_S4Methods.R"))
+# source(file.path(relative_path_ModelArray, "R/utils.R"))
+# source(file.path(relative_path_ModelArray, "R/analyse.R"))
 
-source(file.path(relative_path_ModelArray, "R/ModelArray_Constructor.R"))
-source(file.path(relative_path_ModelArray, "R/ModelArray_S4Methods.R"))
-source(file.path(relative_path_ModelArray, "R/utils.R"))
-source(file.path(relative_path_ModelArray, "R/analyse.R"))
+library(ModelArray)
 
 suppressMessages(library(dplyr))
 library(broom)

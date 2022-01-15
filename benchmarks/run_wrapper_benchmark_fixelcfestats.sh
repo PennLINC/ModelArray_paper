@@ -19,30 +19,19 @@ function wait_r_end {
 
 wait_r_end 10   # in seconds
 date
-cmd="bash wrapper_benchmark_fixelcfestats.sh -S 938 -h 100 -t 2 -f TRUE -F FALSE -n FALSE -w vmware -M TRUE -s 1"
+cmd="bash wrapper_benchmark_fixelcfestats.sh -S 30 -h 100 -t 4 -f TRUE -F FALSE -n FALSE -w vmware -M TRUE -s 1"
 echo $cmd
 $cmd
 date
 
-wait_r_end 600   # in seconds
-date
-cmd="bash wrapper_benchmark_fixelcfestats.sh -S 938 -h 100 -t 3 -f TRUE -F FALSE -n FALSE -w vmware -M TRUE -s 1"
-echo $cmd
-$cmd
-date
-
-wait_r_end 600   # in seconds
-date
-cmd="bash wrapper_benchmark_fixelcfestats.sh -S 30 -h 100 -t 2 -f TRUE -F FALSE -n FALSE -w vmware -M TRUE -s 1"
-echo $cmd
-$cmd
-date
 wait_r_end 600   # in seconds
 date
 cmd="bash wrapper_benchmark_fixelcfestats.sh -S 30 -h 100 -t 3 -f TRUE -F FALSE -n FALSE -w vmware -M TRUE -s 1"
 echo $cmd
 $cmd
 date
+
+
 
 wait_r_end 1
 date
