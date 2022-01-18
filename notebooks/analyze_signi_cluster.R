@@ -248,8 +248,9 @@ df_avgFixel[[scalar_name]] <- avgFixel_subj
 
 #' @param fixel_id starting from 0!
 plot_oneFixel <- function(modelarray, fixel_id, scalar_name,
-                          phenotypes,
-                          dat = NULL, return_else = FALSE) {
+                          formula, method.gam.refit,
+                          phenotypes, dat = NULL,
+                          return_else = FALSE) {
   if (is.null(dat)) {
     values <- scalars(modelarray)[[scalar_name]][(fixel_id + 1),]    # fixel_id starts from 0
     
@@ -285,10 +286,14 @@ plot_oneFixel <- function(modelarray, fixel_id, scalar_name,
 }
 
 # plot one fixel:
-f_1 <- plot_oneFixel(modelarray, fixel_id_list_intersect[1], scalar_name, phenotypes)
-f_last <- plot_oneFixel(modelarray, fixel_id_list_intersect[length(fixel_id_list_intersect)], scalar_name, phenotypes)
+# f_1 <- plot_oneFixel(modelarray, fixel_id_list_intersect[1], scalar_name, 
+#                      formula = formula, method.gam.refit = method.gam.refit, phenotypes = phenotypes)
+# f_last <- plot_oneFixel(modelarray, fixel_id_list_intersect[length(fixel_id_list_intersect)], scalar_name, 
+#                         formula = formula, method.gam.refit = method.gam.refit, phenotypes = phenotypes)
 
-results <- plot_oneFixel(modelarray=NULL, NULL, scalar_name, phenotypes, dat=df_avgFixel, return_else = TRUE)
+results <- plot_oneFixel(modelarray=NULL, NULL, scalar_name, 
+                         formula = formula, method.gam.refit = method.gam.refit, 
+                         phenotypes = phenotypes, dat=df_avgFixel, return_else = TRUE)
 f_avgFixel <- results$f
 onemodel_avgFixel <- results$onemodel
 f_avgFixel
@@ -300,8 +305,13 @@ onemodel_avgFixel.model <- broom::glance(onemodel_avgFixel)
 
 red.formula <- formula(drop.terms(terms(formula, keep.order = TRUE), 
                                   c(1), keep.response = TRUE))   # drop the first term, i.e. smooth of age
-redmodel_avgFixel <- mgcv::gam(formula=red.formula, data = dat,
-                               method = method.gam.refit)
+# redmodel_avgFixel <- mgcv::gam(formula=red.formula, data = df_avgFixel,
+#                                method = method.gam.refit)  # same as below
+results_red <- plot_oneFixel(modelarray=NULL, NULL, scalar_name, 
+                             formula = red.formula, method.gam.refit = method.gam.refit, 
+                             phenotypes = phenotypes, dat=df_avgFixel, return_else = TRUE)
+redmodel_avgFixel <- results_red$onemodel
+  
 redmodel_avgFixel.summary <- summary(redmodel_avgFixel)
 eff.size.avgFixel <- onemodel_avgFixel.summary$r.sq - redmodel_avgFixel.summary$r.sq  
 
@@ -311,9 +321,21 @@ onemodel_avgFixel.summary
 print(paste0("s(Age)'s p.value of re-fit after avg in this cluster = ", toString(s_Age.p.value_avgFixel)))  # if =0, it means <1e-16
 print(paste0("s(Age)'s effect size of re-fit after avg in this cluster = ", sprintf("%.3f",eff.size.avgFixel)))  
 
+### get the partial R2:
+y.obs <- df_avgFixel$FDC   # observed y
+y.pred.full <- mgcv::predict.gam(onemodel_avgFixel)  # predicted y, same values as using "predict(onemodel_avgFixel)"
+y.pred.red <- mgcv::predict.gam(redmodel_avgFixel)
+
+sse.full <- sum( (y.obs - y.pred.full)^2 )
+sse.red <- sum( (y.obs - y.pred.red)^2 )
+
+partial.rsq.avgFixel <- (sse.red - sse.full) / sse.red
+print(paste0("s(Age)'s partial R2 of re-fit after avg in this cluster = ", sprintf("%.3f",partial.rsq.avgFixel)))  
+
 # and add to the plot!
 # x = 12; y = 1.65
-x = 20; y = 0.55
+# x = 20; y = 0.55  # p.value + delta adj Rsq
+x = 20; y = 0.6  # p.value + delta adj Rsq + partial Rsq
 if (s_Age.p.value_avgFixel < 0.001) {
   txt.s_Age.p.value_avgFixel = "s(Age)'s p.value < 0.001"
 } else {
@@ -323,7 +345,8 @@ if (s_Age.p.value_avgFixel < 0.001) {
  
 f_avgFixel + geom_text(x=x, y=y, size = 6,
                        label=paste0(txt.s_Age.p.value_avgFixel, "\n",
-                                    "s(Age)'s effect size = ", sprintf("%.3f",eff.size.avgFixel)))
+                                    "s(Age)'s delta adj Rsq = ", sprintf("%.3f",eff.size.avgFixel),"\n",
+                                    "s(Age)'s partial Rsq = ", sprintf("%.3f",partial.rsq.avgFixel)))
 
 # NOTE: as there is more sex=2 than sex=1, and sex is numeric, so the median(df[,sex]) = 2, the gam curve is fitted upon sex=2, i.e. female (2)
 # TODO: check how many fixels' model: sex is significant
