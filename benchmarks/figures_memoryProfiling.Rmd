@@ -20,13 +20,27 @@ source("memoryProfiling_plot.R")
 ```
 
 ```{r functions for loading folders, include = FALSE}
-# t: table loaded from xlsx
-# which_software: "modelarray" or "mrtrix"
+
+#' To check if the loaded table of benchmarking foldernames are valid, for MRtrix's and ModelArray's
+#' @description Tests include:
+#'  MAsha is as expected (i.e. as argument MAsha)
+#' (not to test MAPsha anymore)
+#'  If all conditions are unique
+#'  The folder names match the condition (number of cores, number of subject)
+#'  All foldernames (across condition and repeats) are unique
+#'  Number of shuffles is as expected (i.e. as argument nshuffles, for MRtrix only) --> all the same
+#' @param t table loaded from .csv file
+#' @param which_software: "modelarray" or "mrtrix"
+#' @param MAsha commit SHA for ModelArray. It should be consistent across all runs
+#' @param nshuffles Number of shuffles (MRtrix only)
 #' @param flag_where_profiling_done A character string, where the memory profiling was done
+
 check_table_foldernames <- function(t, which_software, 
-                                    MAsha = NULL, MAPsha = NULL, 
+                                    MAsha = NULL, #MAPsha = NULL, 
                                     nshuffles=NULL,
                                     flag_where_profiling_done = "vmware") {
+  
+  ## set up
   if (which_software == "mrtrix") {
     str_ncpus <- "nthreads"
 
@@ -37,44 +51,69 @@ check_table_foldernames <- function(t, which_software,
     stop("invalid which_software!")
   }
   
-  # the foldername contains expected charaters:
-  for (i_row in 1:nrow(t)) {
-    nsubj <- t$nsubj[i_row]
-    ncpus <- t[[str_ncpus]][i_row]
-    
-    if (which_software == "mrtrix") {
-      str_MAsha <- ""
-      str_MAPsha <- ""
-      
-      str_expect_include <- paste0("nsubj-",toString(nsubj),".",
-                                   str_ncpus, "-", toString(ncpus),".",
-                                   "ftests.nshuffles-",toString(nshuffles),".",flag_where_profiling_done,".runMemProfiler")
-      
-    } else if (which_software == "modelarray") {
-      #MAsha <- t$ModelArray_commitSHA[i_row]
-      str_MAsha <- paste0("MAsha-",MAsha)
-      
-      #MAPsha <- t$ModelArrayPaper_commitSHA[i_row]
-      str_MAPsha <- paste0("MAPsha-",MAPsha)
-      
-      str_expect_include <- paste0("lm.josiane.nfixel-0.",
-                                   "nsubj-",toString(nsubj),".",
-                                    str_ncpus, "-", toString(ncpus),".",
-                                   flag_where_profiling_done, ".runMemProfiler")
+  ## check how many repeats in it
+  nrepeat_total = 0
+  torun_while <- TRUE
+  while (torun_while) {  # always TRUE
+    if ( grep(paste0("repeat",toString(nrepeat_total+1)), colnames(t)) %>% length() > 0) {# e.g. is repeat1 in column names of t? if no, length =0
+      nrepeat_total <- nrepeat_total + 1
+    } else {   # not included, current nrepeat_total is the max
+      break
     }
-    
-    str_actual <- t$foldername[i_row]
-    testthat::expect_true(grepl(str_expect_include, str_actual, fixed = TRUE))
-    
-    testthat::expect_true(grepl(str_MAsha, str_actual, fixed = TRUE))  # contains str_MAsha
-    testthat::expect_true(grepl(str_MAPsha, str_actual, fixed = TRUE))   # contains str_MAPsha
-
+  }
+  message(paste0("detected number of repeats = ", toString(nrepeat_total)))
+  
+  ## the foldername contains expected characters:
+  for (i_repeat in 1:nrepeat_total) {   # iterate columns
+    for (i_row in 1:nrow(t)) {  # iterate rows
+      nsubj <- t$nsubj[i_row]
+      ncpus <- t[[str_ncpus]][i_row]
+      
+      if (which_software == "mrtrix") {
+        str_MAsha <- ""
+        str_MAPsha <- ""
+        
+        str_expect_include <- paste0("nsubj-",toString(nsubj),".",
+                                     str_ncpus, "-", toString(ncpus),".",
+                                     "ftests.nshuffles-",toString(nshuffles),".",flag_where_profiling_done,".runMemProfiler")
+        
+      } else if (which_software == "modelarray") {
+        #MAsha <- t$ModelArray_commitSHA[i_row]
+        str_MAsha <- paste0("MAsha-",MAsha)
+        
+        #MAPsha <- t$ModelArrayPaper_commitSHA[i_row]
+        #str_MAPsha <- paste0("MAPsha-",MAPsha)
+        
+        str_expect_include <- paste0("lm.josiane.nfixel-0.",
+                                     "nsubj-",toString(nsubj),".",
+                                      str_ncpus, "-", toString(ncpus),".",
+                                     flag_where_profiling_done, ".runMemProfiler")
+      }
+      
+      str_actual <- t[[paste0("repeat",toString(i_repeat))]][i_row]
+      testthat::expect_true(grepl(str_expect_include, str_actual, fixed = TRUE))
+      
+      testthat::expect_true(grepl(str_MAsha, str_actual, fixed = TRUE))  # contains str_MAsha
+      
+      # not to test MAPsha anymore....
+      #testthat::expect_true(grepl(str_MAPsha, str_actual, fixed = TRUE))   # contains str_MAPsha
+  
+    }
   }
   
-  # check if combinations are unique:
+  
+  ## check if combinations of conditions are unique:
   the.unique <- unique(t[,c('nsubj',str_ncpus)])
   testthat::expect_equal(nrow(the.unique),
                          nrow(t))
+  
+  ## check if all foldernames are unique:
+  all_foldernames <- c()
+  for (i_repeat in 1:nrepeat_total) {
+    all_foldernames <- c(all_foldernames, t[[paste0("repeat", toString(i_repeat))]])
+  }
+  testthat::expect_equal(unique(all_foldernames) %>% length(),
+                         nrepeat_total * nrow(t))
   
 }
 
@@ -89,6 +128,9 @@ get_foldername <- function(t, nsubj, ncpus, which_software) {
 
 
 results_modelarray <- function(folder.list, roof.num.child) {
+  myplots <- vector('list', length(folder.list))
+  rough.total.time.sec <- rep(0, length(folder.list))
+  
   for (i_folder in 1:length(folder.list)) {
     num.subj <- as.integer(str_match(folder.list[i_folder], "nsubj-\\s*(.*?)\\s*.ncore")[2])
     
@@ -97,6 +139,10 @@ results_modelarray <- function(folder.list, roof.num.child) {
     num.cores <- as.integer(substr(temp, 7, 20))
     
     out <- summaryMemProfiling(folder.list[i_folder], "devtools", roof.num.child = roof.num.child)
+    df.multi <- out$df.multi
+    rough.total.time.sec[i_folder] <- tail(df.multi[["Est.s."]], n=1)  # currently summaryMemProfiling() only supports memory profiling sampled in sec # last time would be the roughly time it took (may not be accurate for ncore>1, as probably not including singleStarts_parent)
+    myplots[[i_folder]] <- out$f
+      
     when.max <- add_column(out$when.max, ncore = num.cores, .before = 1)
     when.max <- add_column(when.max, nsubj = num.subj, .before = 1)
     
@@ -110,12 +156,39 @@ results_modelarray <- function(folder.list, roof.num.child) {
     
   }
   
+  
+  ## pivot_long summary.when.max # for ggplot()
+  colnames_parentNchild <- c("parent", 
+                           paste(rep("child", roof.num.child), as.character(0:(roof.num.child-1)), sep="") )   # e.g. c("parent" "child0" "child1" "child2" "child3")
+  clean.summary.when.max <- summary.when.max
+  
+  for (i_process in 1:length(colnames_parentNchild)) {   # remove ".RSS.MB." from parent and child* processes; but not total*
+    names(clean.summary.when.max)[names(clean.summary.when.max) == paste0(colnames_parentNchild[i_process], ".RSS.MB.")] <- colnames_parentNchild[i_process]
+  
+  }
+  clean.summary.when.max <- clean.summary.when.max %>% 
+    tidyr::pivot_longer(cols = colnames_parentNchild, names_to="process", values_to="memory_MB")
+
+  # convert to GB:
+  clean.summary.when.max <- clean.summary.when.max %>% mutate(memory_GB = memory_MB /1024,
+                                                              total_GB = total.RSS.MB. / 1024)
+  
+  clean.summary.when.max$process <- factor(clean.summary.when.max$process, 
+                                                    levels = colnames_parentNchild %>% rev() )
+  
+  
+  
+  ## total memory usage: # this is for adding a label of total value at top of the bar
   totals <- summary.when.max %>% select(nsubj, ncore, total.RSS.MB.)
-  #colnames(totals) <- gsub(".RSS.MB.", "",colnames(totals))
   totals[["total.RSS.GB."]] <- totals[["total.RSS.MB."]] / 1024
   
+  
+  
   toReturn <- list(summary.when.max = summary.when.max,
-         totals = totals)
+                   clean.summary.when.max = clean.summary.when.max,
+                  totals = totals,
+                  rough.total.time.sec = rough.total.time.sec,
+                  myplots = myplots)
   
   return(toReturn)
 }
@@ -170,40 +243,133 @@ csv_foldernames_ModelArray <- "benchmark_memory_foldernames_ModelArrayLM.csv"
 
 # used by benchmarking for ModelArray.lm():
 ModelArray_commitSHA_short <- "0911c4f" 
-ModelArrayPaper_commitSHA_short <- "94ed85f"
+#ModelArrayPaper_commitSHA_short <- "94ed85f"
+
+idx_repeat_modelarray <- 2  # +++++++++++++++++=
+idx_repeat_mrtrix <- 1  # +++++++++++++++++++
 
 flag_where_now <- "vmware"  # where currently this script is running
+
+# for ggplot:
+color_parent_process <- "#737373"
+color_children_process <- c("#006E2D", "#248B46", "#40AB5D", "#71C574")
+color_mrtrix <- "#909090"
+color_modelarray <- "#248B46"
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 t_mrtrix <- read.csv(csv_foldernames_MRtrix)
 check_table_foldernames(t_mrtrix, which_software="mrtrix",nshuffles = 100)
 
 t_modelarray <- read.csv(csv_foldernames_ModelArray)
-# t_modelarray <- t_modelarray[1:4,]
+# t_modelarray <- t_modelarray[-c(9,12),]
 check_table_foldernames(t_modelarray, which_software="modelarray",
-                        MAsha = ModelArray_commitSHA_short,
-                        MAPsha = ModelArrayPaper_commitSHA_short)
+                        MAsha = ModelArray_commitSHA_short)
+                        #MAPsha = ModelArrayPaper_commitSHA_short)
 
 if (flag_where_now == "vmware") {
   main.folder.modelarray <- "/home/chenying/Desktop/fixel_project/FixelArray_benchmark"
   main.folder.mrtrix <- "/home/chenying/Desktop/fixel_project/data/data_from_josiane/for_fixelcfestats/stats_FDC"
 }
+
+str_repeat_modelarray <- paste0("repeat", toString(idx_repeat_modelarray))
+str_repeat_mrtrix <- paste0("repeat", toString(idx_repeat_mrtrix))
+
+message(paste0("Using results from repeat #",toString(idx_repeat_modelarray), " for ModelArray, and",
+               "results from repeat #", toString(idx_repeat_mrtrix), " for MRtrix"))
+```
+
+## roughly how long it takes for ModelArray when memory profiling is on
+(May not be accurate)
+```{r}
+roof.num.child = 4
+
+foldernames.list.modelarray <- t_modelarray[[str_repeat_modelarray]]
+folders.list.modelarray <- file.path(main.folder.modelarray,  foldernames.list.modelarray)
+
+out_modelarray <- results_modelarray(folders.list.modelarray, roof.num.child = roof.num.child)
+rough.total.time.sec <- out_modelarray$rough.total.time.sec
+t_modelarray$rough.total.time.sec <- rough.total.time.sec
 ```
 
 ## number of subject = 30
 ```{r}
 nsubj = 30
-foldernames.list.modelarray <- t_modelarray$foldername[t_modelarray$nsubj == nsubj]
+roof.num.child = 4
 
-foldernames.list.mrtrix <- t_mrtrix$foldername[t_mrtrix$nsubj == nsubj]
+foldernames.list.modelarray <- t_modelarray[[str_repeat_modelarray]][t_modelarray$nsubj == nsubj]
+foldernames.list.modelarray <- sort(foldernames.list.modelarray) %>% gtools::mixedsort(decreasing = TRUE)
+folders.list.modelarray <- file.path(main.folder.modelarray,  foldernames.list.modelarray)
+foldernames.list.modelarray
+  
+out_modelarray <- results_modelarray(folders.list.modelarray, roof.num.child = roof.num.child)
+totals_modelarray <- out_modelarray$totals
+summary.when.max_modelarray <- out_modelarray$summary.when.max
+clean.summary.when.max_modelarray <- out_modelarray$clean.summary.when.max
+totals_modelarray
+summary.when.max_modelarray
+
+
+foldernames.list.mrtrix <- t_mrtrix[[str_repeat_mrtrix]][t_mrtrix$nsubj == nsubj]
 foldernames.list.mrtrix <- sort(foldernames.list.mrtrix) %>% gtools::mixedsort(decreasing = TRUE)
 folders.list.mrtrix <- file.path(main.folder.mrtrix,  foldernames.list.mrtrix)
 foldernames.list.mrtrix
 
 theresults <- results_mrtrix(folders.list.mrtrix)
-summary.max.mrtrix <- theresults$summary.max
-summary.max.mrtrix
+totals_mrtrix <- theresults$summary.max
+totals_mrtrix
 #theresults$myplots[[4]]
+
+
+### figure a: ModelArray.lm()
+f_modelarray <- ggplot(clean.summary.when.max_modelarray, aes(fill=process, y=memory_GB, x=ncore)) + 
+                    geom_bar(position="stack", stat="identity", width = 0.3) + 
+                  geom_text(aes(x = ncore, y = total.RSS.GB.+5*0.03, label = sprintf("%0.2f", round(total.RSS.GB., digits = 2)), fill = NULL), data = totals_modelarray, size=5) +
+                  scale_x_discrete(limits=c("1","2","3","4")) +
+                   scale_fill_manual(values= c(color_parent_process, color_children_process[1:roof.num.child]) %>% rev() ) +
+                  theme_bw() + 
+                  theme(aspect.ratio = 0.8,
+                        text = element_text(size=16)) +
+                  xlab("Number of CPU cores") +
+                  ylab("Max memory (GB)") +
+                  ggtitle(paste0("ModelArray.lm(): nsubj=", toString(nsubj)))
+
+f_modelarray
+
+
+### figure b: comparison
+# adjust a bit before combination:
+totals_modelarray_ready <- totals_modelarray
+totals_modelarray_ready <- rename(totals_modelarray_ready, nparallel = ncore)   # new.col.name = old.col.name
+totals_modelarray_ready <- rename(totals_modelarray_ready, ModelArray = total.RSS.GB.) 
+totals_modelarray_ready <- select(totals_modelarray_ready, -total.RSS.MB.)   # remove a column
+
+totals_mrtrix_ready <- totals_mrtrix
+totals_mrtrix_ready <- rename(totals_mrtrix_ready, nparallel = nthreads)
+totals_mrtrix_ready <- rename(totals_mrtrix_ready, MRtrix = max.RSS.GB.)
+totals_mrtrix_ready <- select(totals_mrtrix_ready, -max.RSS.MB.)
+
+# combine:
+together_totals <- merge(totals_modelarray_ready, totals_mrtrix_ready, by = c("nsubj","nparallel"))
+testthat::expect_equal(unique(together_totals[["nsubj"]]), nsubj) # there should be only one unique value of nparallel
+together_totals <- together_totals %>% tidyr::pivot_longer(cols = c("ModelArray","MRtrix"), names_to="software", values_to="max.total.GB.")
+together_totals$software <- factor(together_totals$software, 
+                                   levels = c("MRtrix","ModelArray") )
+
+f_compare <- ggplot(together_totals, aes(fill=software, y=max.total.GB., x=nparallel)) + 
+                geom_bar(position="dodge", stat="identity", width=0.6) + 
+              scale_fill_manual(values= c(color_mrtrix, color_modelarray) ) +
+              geom_text(position = position_dodge(width = 0.6), 
+                        aes(y=max.total.GB.+8*0.05, label=sprintf("%0.2f", round(max.total.GB., digits=2)), hjust=0.4), 
+                        size=5, angle=0) + 
+              #ylim(0, 53) + 
+              scale_x_continuous(breaks = c(totals_modelarray_ready$nparallel)) +
+              theme_bw() + 
+              theme(aspect.ratio = 0.8,
+                    text = element_text(size=15, family="Arial") ) +
+              xlab("Number of threads (or cores)") + 
+              ylab("Max memory (GB)") + 
+              ggtitle(paste0("Comparison: nsubj = ",toString(nsubj)))
+f_compare
 
 
 ```
@@ -212,7 +378,7 @@ summary.max.mrtrix
 ```{r}
 nsubj = 938
 
-foldernames.list.mrtrix <- t_mrtrix$foldername[t_mrtrix$nsubj == nsubj]
+foldernames.list.mrtrix <- t_mrtrix[[str_repeat_mrtrix]][t_mrtrix$nsubj == nsubj]
 foldernames.list.mrtrix <- sort(foldernames.list.mrtrix) %>% gtools::mixedsort(decreasing = TRUE)
 folders.list.mrtrix <- file.path(main.folder.mrtrix,  foldernames.list.mrtrix)
 foldernames.list.mrtrix
@@ -226,7 +392,7 @@ summary.max.mrtrix
 ```{r}
 ncpus = 4
 
-foldernames.list.modelarray <- t_modelarray$foldername[t_modelarray$ncore == ncpus]
+foldernames.list.modelarray <- t_modelarray[[str_repeat_modelarray]][t_modelarray$ncore == ncpus]
 foldernames.list.modelarray <- sort(foldernames.list.modelarray) %>% gtools::mixedsort(decreasing = TRUE)
 folders.list.modelarray <- file.path(main.folder.modelarray,  foldernames.list.modelarray)
 foldernames.list.modelarray
@@ -234,9 +400,11 @@ foldernames.list.modelarray
 out_modelarray <- results_modelarray(folders.list.modelarray, roof.num.child = ncpus)
 totals_modelarray <- out_modelarray$totals
 summary.when.max_modelarray <- out_modelarray$summary.when.max
+clean.summary.when.max_modelarray <- out_modelarray$clean.summary.when.max
 totals_modelarray
+summary.when.max_modelarray
 
-foldernames.list.mrtrix <- t_mrtrix$foldername[t_mrtrix$nthreads == ncpus]
+foldernames.list.mrtrix <- t_mrtrix[[str_repeat_mrtrix]][t_mrtrix$nthreads == ncpus]
 foldernames.list.mrtrix <- sort(foldernames.list.mrtrix) %>% gtools::mixedsort(decreasing = TRUE)
 folders.list.mrtrix <- file.path(main.folder.mrtrix,  foldernames.list.mrtrix)
 foldernames.list.mrtrix
@@ -248,67 +416,89 @@ totals_mrtrix
 
 
 ### figure a: ModelArray itself
-# adjust a bit before plotting:
-colnames_parentNchild <- c("parent", 
-                           paste(rep("child", ncpus), as.character(0:(ncpus-1)), sep="") )   # e.g. c("parent" "child0" "child1" "child2" "child3")
-clean.summary.when.max_modelarray <- summary.when.max_modelarray
+f_modelarray <- ggplot(clean.summary.when.max_modelarray, aes(fill=process, y=memory_GB, x=nsubj)) + 
+                  geom_bar(position="stack", stat="identity") + 
+                geom_text(aes(x = nsubj, y = total.RSS.GB.+4*0.05, label = sprintf("%0.2f", round(total.RSS.GB., digits = 2)), fill = NULL),
+                          data = totals_modelarray, size=5, angle = 30) +   # , hjust = 0, nudge_x = -0.05, vjust = 0
+                scale_x_continuous(breaks = c(summary.when.max_modelarray$nsubj)) +
+                scale_fill_manual(values= c( color_parent_process, color_children_process[1:ncpus] ) %>% rev() ) + 
+                theme_bw() +
+                ylim(0, 3.1) + 
+                theme(aspect.ratio = 0.8,
+                      text = element_text(size=16, family="Arial"))+
+                      #axis.text.x = element_text(angle=45, hjust=1)) + 
+                xlab("Number of subjects") +
+                ylab("Max memory (GB)") +
+                ggtitle(paste0("ModelArray.lm(): ncores = ", toString(ncpus)))
 
-for (i_process in 1:length(colnames_parentNchild)) {   # remove ".RSS.MB." from parent and child* processes; but not total*
-  names(clean.summary.when.max_modelarray)[names(clean.summary.when.max_modelarray) == paste0(colnames_parentNchild[i_process], ".RSS.MB.")] <- colnames_parentNchild[i_process]
+f_modelarray
 
-}
-#colnames(clean.summary.when.max_modelarray) <- gsub(".RSS.MB.", "",colnames(clean.summary.when.max_modelarray))  # remove ".RSS.MB."
-clean.summary.when.max_modelarray <- clean.summary.when.max_modelarray %>% 
-  tidyr::pivot_longer(cols = colnames_parentNchild, names_to="process", values_to="memory_MB")
-#clean.summary.when.max_modelarray <- rename(clean.summary.when.max_modelarray, total.child_MB = total.child)  # add "MB" to be clear
-
-# convert to GB:
-clean.summary.when.max_modelarray <- clean.summary.when.max_modelarray %>% mutate(memory_GB = memory_MB /1024,
-                                                                                  total_GB = total.RSS.MB. / 1024)
-
-
-clean.summary.when.max_modelarray$process <- factor(clean.summary.when.max_modelarray$process, 
-                                                  levels = colnames_parentNchild %>% rev() )
-
-totals <- summary.when.max_modelarray %>% select(nsubj, total.RSS.MB.)
-totals <- totals %>% mutate(total_GB = total.RSS.MB./1024)
-#colnames(totals) <- gsub(".RSS.MB.", "",colnames(totals))
-
-
-ggplot(clean.summary.when.max_modelarray, aes(fill=process, y=memory_GB, x=nsubj)) + 
-    geom_bar(position="stack", stat="identity") + 
-  geom_text(aes(x = nsubj, y = total_GB+4*0.05, label = sprintf("%0.2f", round(total_GB, digits = 2)), fill = NULL),
-            data = totals, size=5, angle = 30) +   # , hjust = 0, nudge_x = -0.05, vjust = 0
-  scale_x_continuous(breaks = c(summary.when.max_modelarray$nsubj)) +
-  scale_fill_manual(values= c("#737373", c("#006E2D", "#248B46", "#40AB5D", "#71C574")) %>% rev() ) + 
-  theme_bw() +
-  #ylim(0, 53) + 
-  theme(aspect.ratio = 0.8,
-        text = element_text(size=15))+
-        #axis.text.x = element_text(angle=45, hjust=1)) + 
-  xlab("Number of subjects") +
-  ylab("Max memory (GB)") +
-  ggtitle(paste0("ModelArray.lm(): ncores = ", toString(ncpus)))
+ggsave("/home/chenying/Desktop/fixel_project/ModelArray_paper/figures/figure_diffSubj_ModelArrayLM.png",
+       plot = f_modelarray, device = "png", dpi = 300, width = 7, height = 7, units = "in")  # default size in Rmd is 7x7 inches
+# but the dpi is still 96 (checked on windows computer...)
+# 
+# png("/home/chenying/Desktop/fixel_project/ModelArray_paper/figures/figure_diffSubj_ModelArrayLM.png",
+#     res = 300)
+# print(f_modelarray)
+# while (!is.null(dev.list()))  dev.off()
+# # but I cannot find the saved .png ....
 
 
-
+# jpeg("test.jpg",res = 300)
+#jpeg("/home/chenying/Desktop/fixel_project/ModelArray_paper/figures/test.jpg", units="in", width=8.2, height=5.6, res=800)  # this would save out when knitting (instead of running block by block)
+# print(f_modelarray)
+# while (!is.null(dev.list()))  dev.off()
 
 ### figure b: MRtrix itself
+delta_y <- 0.03 * max(totals_mrtrix$max.RSS.GB.)
+f_mrtrix <- ggplot(totals_mrtrix, aes(y = max.RSS.GB., x = nsubj)) +
+              geom_bar(stat="identity", width = 60, fill = color_mrtrix) +
+              geom_text(data = totals_mrtrix, aes(x = nsubj, y = max.RSS.GB. + delta_y, label = sprintf("%0.2f", round(max.RSS.GB., digits = 2)), fill = NULL),
+                        size = 5, angle = 0) + 
+              scale_x_continuous(breaks = c(totals_mrtrix$nsubj)) +
+              theme_bw() +
+              theme(aspect.ratio = 0.8,
+                    text = element_text(size=16, family="Arial"))+
+              xlab("Number of subjects") +
+              ylab("Max memory (GB)") +
+              ggtitle(paste0("MRtrix fixelcfestats: nthreads = ", toString(ncpus)))
+f_mrtrix
 
 ### figure c: comparing MRtrix vs ModelArray
 # adjust a bit before combination:
-totals_modelarray <- rename(totals_modelarray, nparallel = ncore)   # new.col.name = old.col.name
-totals_modelarray <- rename(totals_modelarray, ModelArray = total.RSS.GB.) 
-totals_modelarray <- select(totals_modelarray, -total.RSS.MB.)   # remove a column
+totals_modelarray_ready <- totals_modelarray
+totals_modelarray_ready <- rename(totals_modelarray_ready, nparallel = ncore)   # new.col.name = old.col.name
+totals_modelarray_ready <- rename(totals_modelarray_ready, ModelArray = total.RSS.GB.) 
+totals_modelarray_ready <- select(totals_modelarray_ready, -total.RSS.MB.)   # remove a column
 
-totals_mrtrix <- rename(totals_mrtrix, nparallel = nthreads)
-totals_mrtrix <- rename(totals_mrtrix, MRtrix = max.RSS.GB.)
-totals_mrtrix <- select(totals_mrtrix, -max.RSS.MB.)
+totals_mrtrix_ready <- totals_mrtrix
+totals_mrtrix_ready <- rename(totals_mrtrix_ready, nparallel = nthreads)
+totals_mrtrix_ready <- rename(totals_mrtrix_ready, MRtrix = max.RSS.GB.)
+totals_mrtrix_ready <- select(totals_mrtrix_ready, -max.RSS.MB.)
 
 # combine:
-together_totals <- merge(totals_modelarray, totals_mrtrix, by = c("nsubj","nparallel"))
+together_totals <- merge(totals_modelarray_ready, totals_mrtrix_ready, by = c("nsubj","nparallel"))
 testthat::expect_equal(unique(together_totals[["nparallel"]]), ncpus) # there should be only one unique value of nparallel
 together_totals <- together_totals %>% tidyr::pivot_longer(cols = c("ModelArray","MRtrix"), names_to="software", values_to="max.total.GB.")
+together_totals$software <- factor(together_totals$software, 
+                                   levels = c("MRtrix","ModelArray") )
+
+
+f_compare <- ggplot(together_totals, aes(fill=software, y=max.total.GB., x=nsubj)) + 
+                geom_bar(position="dodge", stat="identity") + 
+              scale_fill_manual(values= c(color_mrtrix, color_modelarray) ) +
+              geom_text(position = position_dodge(width = 50), 
+                        aes(y=max.total.GB.+50*0.05, label=sprintf("%0.2f", round(max.total.GB., digits=2)), hjust=0.3), 
+                        size=3.5, angle=30) + 
+              ylim(0, 53) + 
+              scale_x_continuous(breaks = c(totals_modelarray_ready$nsubj)) +
+              theme_bw() + 
+              theme(aspect.ratio = 1/2,
+                    text = element_text(size=15, family="Arial") ) +
+              xlab("Number of subjects") + 
+              ylab("Max memory (GB)") + 
+              ggtitle(paste0("Comparison: nthreads (ncores) = ",toString(ncpus)))
+f_compare
 
 ```
 
