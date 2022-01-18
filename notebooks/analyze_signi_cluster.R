@@ -45,6 +45,7 @@ devtools::install_github(paste0("PennLINC/ModelArray@", ModelArray_commitSHA),  
 library(ModelArray)
 
 source("notebooks/GAMM_plotting.R")   # Bart Larsen's function for visualizing gam results
+source("notebooks/utils.R")   # source partialRsq()
 
 step2_thresholding <- function(fn.h5.results, scalar_name, analysis_name, stat_name_thr, thr, flag_compare, folder.h5.results,
                                results_matrix,
@@ -296,7 +297,7 @@ results <- plot_oneFixel(modelarray=NULL, NULL, scalar_name,
                          phenotypes = phenotypes, dat=df_avgFixel, return_else = TRUE)
 f_avgFixel <- results$f
 onemodel_avgFixel <- results$onemodel
-f_avgFixel
+#f_avgFixel
 
 onemodel_avgFixel.summary <- summary(onemodel_avgFixel)
 onemodel_avgFixel.smoothTerm <- broom::tidy(onemodel_avgFixel, parametric=FALSE)
@@ -309,7 +310,7 @@ red.formula <- formula(drop.terms(terms(formula, keep.order = TRUE),
 #                                method = method.gam.refit)  # same as below
 results_red <- plot_oneFixel(modelarray=NULL, NULL, scalar_name, 
                              formula = red.formula, method.gam.refit = method.gam.refit, 
-                             phenotypes = phenotypes, dat=df_avgFixel, return_else = TRUE)
+                             phenotypes = phenotypes, dat=onemodel_avgFixel$model, return_else = TRUE)  # now using the used data in full model, to be consistent | previous: dat=df_avgFixel
 redmodel_avgFixel <- results_red$onemodel
   
 redmodel_avgFixel.summary <- summary(redmodel_avgFixel)
@@ -322,14 +323,8 @@ print(paste0("s(Age)'s p.value of re-fit after avg in this cluster = ", toString
 print(paste0("s(Age)'s effect size of re-fit after avg in this cluster = ", sprintf("%.3f",eff.size.avgFixel)))  
 
 ### get the partial R2:
-y.obs <- df_avgFixel$FDC   # observed y
-y.pred.full <- mgcv::predict.gam(onemodel_avgFixel)  # predicted y, same values as using "predict(onemodel_avgFixel)"
-y.pred.red <- mgcv::predict.gam(redmodel_avgFixel)
-
-sse.full <- sum( (y.obs - y.pred.full)^2 )
-sse.red <- sum( (y.obs - y.pred.red)^2 )
-
-partial.rsq.avgFixel <- (sse.red - sse.full) / sse.red
+temp <- partialRsq(onemodel_avgFixel, redmodel_avgFixel)
+partial.rsq.avgFixel <- temp$partialRsq
 print(paste0("s(Age)'s partial R2 of re-fit after avg in this cluster = ", sprintf("%.3f",partial.rsq.avgFixel)))  
 
 # and add to the plot!
