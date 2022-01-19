@@ -30,7 +30,11 @@ elif [[ "$run_where" == "vmware"  ]]; then
     folder_main_output="/home/chenying/Desktop/fixel_project/data/data_from_josiane/for_fixelcfestats/stats_FDC"
 fi
 
-folder_output="${folder_main_output}/nsubj-${num_subj}.nthreads-${nthreads}"
+
+ModelArrayPaper_commitSHA=`git rev-parse HEAD`
+ModelArrayPaper_commitSHA_short=${ModelArrayPaper_commitSHA:0:7}  # first 7 characters in SHA
+
+folder_output="${folder_main_output}/MAPsha-${ModelArrayPaper_commitSHA_short}.nsubj-${num_subj}.nthreads-${nthreads}"
 
 if [[ "$ftests" == "TRUE"   ]]; then
     folder_output+=".ftests"
