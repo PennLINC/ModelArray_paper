@@ -30,7 +30,7 @@ source("memoryProfiling_plot.R")
 #'  All foldernames (across condition and repeats) are unique
 #'  Number of shuffles is as expected (i.e. as argument nshuffles, for MRtrix only) --> all the same
 #' @param t table loaded from .csv file
-#' @param which_software: "modelarray" or "mrtrix"
+#' @param which_software "modelarray" or "mrtrix"
 #' @param MAsha commit SHA for ModelArray. It should be consistent across all runs
 #' @param nshuffles Number of shuffles (MRtrix only)
 #' @param flag_where_profiling_done A character string, where the memory profiling was done
@@ -115,9 +115,100 @@ check_table_foldernames <- function(t, which_software,
   testthat::expect_equal(unique(all_foldernames) %>% length(),
                          nrepeat_total * nrow(t))
   
+  
+  #toReturn <- list(nrepeat_total = nrepeat_total)
+  return(nrepeat_total)
+  
 }
 
-get_foldername <- function(t, nsubj, ncpus, which_software) {
+
+
+#' This is to get the peak memory usage for all repeats + conditions, then get the foldername with the median peak memory usage among all repeats for each condition
+#' @param t table loaded from .csv file
+#' @param which_software "modelarray" or "mrtrix"
+#' @param nrepeat_total number of repeats in total, returned by check_table_foldernames()
+#' @param main.folder Main folder of the results, depending on software
+#' @param roof.num.child Number of possible child processes, NULL for mrtrix
+#' @return updated t after adding columns: repeat*_max_total_GB, repeat_median_max_total_GB, idx_repeat_median, and repeat_median (the foldername of repeat with median maxGB)
+#' TODO: to test out mrtrix's !!!!!!!!!!!!! +++++++++++++++++++++++++++==
+get_maxMemory_N_medianRepeat <- function(t, which_software, nrepeat_total, 
+                                         main.folder, roof.num.child=NULL) {
+  ## set up
+  nconditions <- nrow(t)
+  
+  # drop the existing result columns in t:    
+  for (i_repeat in 1:nrepeat_total) {
+    colname_repeat_value <- paste0("repeat",toString(i_repeat),"_max_total_GB")  # e.g. repeat2_max_total_GB
+    if (colname_repeat_value %in% colnames(t)) {
+      warning(paste0("The max total GB for repeat ",toString(i_repeat)," has been generated in t; will delete and rerun...."))
+      t <- t %>% dplyr::select(-one_of(colname_repeat_value)) # drop the column
+    }
+  }
+  
+  if ("idx_repeat_median" %in% colnames(t)) {
+    warning("The column 'idx_repeat_median' has been generated in t; will delete and rerun....")
+    t <- t %>% dplyr::select(-one_of("idx_repeat_median")) # drop the column
+  }
+  if ("repeat_median_max_total_GB" %in% colnames(t)) {
+    warning("The column 'repeat_median_max_total_GB' has been generated in t; will delete and rerun....")
+    t <- t %>% dplyr::select(-one_of("repeat_median_max_total_GB")) # drop the column
+  }
+  if ("repeat_median" %in% colnames(t)) {
+    warning("The column 'repeat_median' has been generated in t; will delete and rerun....")
+    t <- t %>% dplyr::select(-one_of("repeat_median")) # drop the column
+  }
+  # +++ if add any new columns to t, need to add to here for deletion, otherwise even though t_values will be merged to t + there will be duplicated columns, when extracting, it will still use the previous value
+  
+  
+  # create t_values for storing new values:
+  t_values <- data.frame(matrix(ncol = nrepeat_total + 3, nrow = nconditions))
+  list_repeat_max_total_GB <- paste("repeat", as.character(1:nrepeat_total), "_max_total_GB",sep="")
+  colnames(t_values) <- c(list_repeat_max_total_GB,
+                          "idx_repeat_median", "repeat_median_max_total_GB", "repeat_median")
+
+  
+  ## iterate across repeats (and conditions), get the max total memory usage for each repeat --> add to t_values
+  for (i_repeat in 1:nrepeat_total) {
+    str_repeat <- paste0("repeat",toString(i_repeat))
+    colname_repeat_value <- paste0(str_repeat, "_max_total_GB")
+      
+    foldername.list <- t[[str_repeat]]
+    folder.list <- file.path(main.folder, foldername.list)
+    
+    if (which_software == "modelarray") {
+      out <- results_modelarray(folder.list, roof.num.child)  
+      t_values[[colname_repeat_value]] <- out$totals[["total.RSS.GB."]]
+    } else if (which_software == "mrtrix") {
+      out <- results_mrtrix(folder.list)
+      t_values[[colname_repeat_value]] <- out$summary.max[["max.RSS.GB."]]
+    } else {
+      stop("invalid 'which_software'")
+    }
+    
+      
+  }
+  
+  
+  ## get the repeat index (and foldername) with the median value --> add to t_values
+  for (i_condition in 1:nconditions) {   # TEST: have tested against manually calcu with modelarray
+    vec <- t_values[i_condition, list_repeat_max_total_GB] %>% as.numeric()
+    quantile50 <- quantile(vec, 0.5)  # using default method to get quantile
+    i_vec <- which.min(abs(vec - quantile50))  # get the i-th in all the list; if exactly the same, still return only one index
+    str_repeat_median_max_total_GB <- list_repeat_max_total_GB[i_vec]  # get the column name, e.g. repeat2_max_total_GB
+    
+    idx_repeat_median <- str_match(str_repeat_median_max_total_GB, "repeat\\s*(.*?)\\s*_max_total_GB")[2]  %>% as.numeric() # e.g. 2
+    str_repeat_median <- paste0("repeat",toString(idx_repeat_median))   # e.g. repeat2
+    foldername_repeat_median <- t[[str_repeat_median]][i_condition]   # e.g. the foldername for repeat2
+    
+    t_values[["idx_repeat_median"]][i_condition] <- idx_repeat_median
+    t_values[["repeat_median"]][i_condition] <- foldername_repeat_median
+    t_values[["repeat_median_max_total_GB"]][i_condition] <- vec[i_vec]   # the memory usage
+  }
+  
+  
+  ## merge t_values to t
+  t <- cbind(t, t_values)
+  ## return t
   
 }
 ```
@@ -198,6 +289,7 @@ results_modelarray <- function(folder.list, roof.num.child) {
 #' @param folder.list A list of folder names (absolute path)
 results_mrtrix <- function(folder.list) {
   myplots <- vector('list', length(folder.list))
+  rough.total.time.sec <- rep(0, length(folder.list))
   
   for (i_folder in 1:length(folder.list)) {
     nthreads <- as.numeric(str_match(folder.list[i_folder], "nthreads-\\s*(.*?)\\s*.ftests")[2])
@@ -212,7 +304,9 @@ results_mrtrix <- function(folder.list) {
                              nthreads = nthreads,
                                 max.RSS.MB. = max.RSS.MB.,
                               max.RSS.GB. = max.RSS.MB./1024)
-
+    rough.total.time.sec[[i_folder]] <- max(df$Est.s.)
+    
+    
     if (i_folder==1) {
       summary.max <- df.max.RSS
 
@@ -228,7 +322,8 @@ results_mrtrix <- function(folder.list) {
   }
   
   toReturn <- list(summary.max = summary.max,
-                     myplots = myplots)
+                     myplots = myplots,
+                   rough.total.time.sec = rough.total.time.sec)
   return(toReturn)
 }
   
@@ -245,8 +340,8 @@ csv_foldernames_ModelArray <- "benchmark_memory_foldernames_ModelArrayLM.csv"
 ModelArray_commitSHA_short <- "0911c4f" 
 #ModelArrayPaper_commitSHA_short <- "94ed85f"
 
-idx_repeat_modelarray <- 2  # +++++++++++++++++=
-idx_repeat_mrtrix <- 1  # +++++++++++++++++++
+idx_repeat_modelarray <- 3  # +++++++++++++++++= 1,2,3 or "median"
+idx_repeat_mrtrix <- 1  # +++++++++++++++++++ 1,2,3 or "median"
 
 flag_where_now <- "vmware"  # where currently this script is running
 
@@ -257,28 +352,37 @@ color_mrtrix <- "#909090"
 color_modelarray <- "#248B46"
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-t_mrtrix <- read.csv(csv_foldernames_MRtrix)
-check_table_foldernames(t_mrtrix, which_software="mrtrix",nshuffles = 100)
 
 t_modelarray <- read.csv(csv_foldernames_ModelArray)
 # t_modelarray <- t_modelarray[-c(9,12),]
-check_table_foldernames(t_modelarray, which_software="modelarray",
+nrepeat.total.modelarray <- check_table_foldernames(t_modelarray, which_software="modelarray",
                         MAsha = ModelArray_commitSHA_short)
                         #MAPsha = ModelArrayPaper_commitSHA_short)
+t_modelarray <- get_maxMemory_N_medianRepeat(t_modelarray, "modelarray", nrepeat.total.modelarray, 
+                                         main.folder.modelarray, roof.num.child=4)
+
+t_mrtrix <- read.csv(csv_foldernames_MRtrix)
+nrepeat.total.mrtrix <- check_table_foldernames(t_mrtrix, which_software="mrtrix",nshuffles = 100)
+t_mrtrix <- get_maxMemory_N_medianRepeat(t_mrtrix, "mrtrix", nrepeat.total.mrtrix, 
+                                         main.folder.mrtrix, roof.num.child=NULL)
 
 if (flag_where_now == "vmware") {
   main.folder.modelarray <- "/home/chenying/Desktop/fixel_project/FixelArray_benchmark"
   main.folder.mrtrix <- "/home/chenying/Desktop/fixel_project/data/data_from_josiane/for_fixelcfestats/stats_FDC"
 }
 
-str_repeat_modelarray <- paste0("repeat", toString(idx_repeat_modelarray))
-str_repeat_mrtrix <- paste0("repeat", toString(idx_repeat_mrtrix))
+str_repeat_modelarray <- ifelse(idx_repeat_modelarray == "median",
+                                "repeat_median",    # when taking the median repeat
+                                paste0("repeat", toString(idx_repeat_modelarray)))  # e.g. repeat2
+str_repeat_mrtrix <- ifelse(idx_repeat_mrtrix == "median",
+                                "repeat_median",    # when taking the median repeat
+                                paste0("repeat", toString(idx_repeat_mrtrix)))  # e.g. repeat2  
 
-message(paste0("Using results from repeat #",toString(idx_repeat_modelarray), " for ModelArray, and",
+message(paste0("Using results from repeat #",toString(idx_repeat_modelarray), " for ModelArray, and ",
                "results from repeat #", toString(idx_repeat_mrtrix), " for MRtrix"))
 ```
 
-## roughly how long it takes for ModelArray when memory profiling is on
+## roughly how long it takes when memory profiling is on
 (May not be accurate)
 ```{r}
 roof.num.child = 4
@@ -287,8 +391,15 @@ foldernames.list.modelarray <- t_modelarray[[str_repeat_modelarray]]
 folders.list.modelarray <- file.path(main.folder.modelarray,  foldernames.list.modelarray)
 
 out_modelarray <- results_modelarray(folders.list.modelarray, roof.num.child = roof.num.child)
-rough.total.time.sec <- out_modelarray$rough.total.time.sec
-t_modelarray$rough.total.time.sec <- rough.total.time.sec
+rough.total.time.sec.modelarray <- out_modelarray$rough.total.time.sec
+t_modelarray$rough.total.time.sec <- rough.total.time.sec.modelarray 
+
+foldernames.list.mrtrix <- t_mrtrix[[str_repeat_mrtrix]]
+folders.list.mrtrix <- file.path(main.folder.mrtrix, foldernames.list.mrtrix)
+
+out_mrtrix <- results_mrtrix(folders.list.mrtrix)
+rough.total.time.sec.mrtrix <- out_mrtrix$rough.total.time.sec
+t_mrtrix$rough.total.time.sec <- rough.total.time.sec.mrtrix 
 ```
 
 ## number of subject = 30
