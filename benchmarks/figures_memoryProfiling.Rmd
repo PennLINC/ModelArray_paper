@@ -10,7 +10,10 @@ list.of.packages <- c(#"readxl",  # reading xlsx
                       "gtools",    # for sorting filenames
                       "dplyr", "tidyr", "tibble", "broom","stringr","ggplot2",   # str_match
                       #"ggrepel",   # for non-overlapping text in ggplot2
-                      "egg", "grid")   #  # set ggplot2 panel size and plot ggplot2 --> not shown up in Rmd?
+                      "egg", "grid",  # set ggplot2 panel size and plot ggplot2 --> not shown up in Rmd?
+                      "patchwork",    # for multiple panels in one figure
+                      "svglite",   # for ggsave() as .svg 
+                      )     
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 
@@ -329,7 +332,93 @@ results_mrtrix <- function(folder.list) {
   
 ```
 
+```{r plots generator}
+plotGen_modelarray_diffncores <- function(clean.summary.when.max_modelarray, 
+                                    totals_modelarray,
+                                    nsubj, roof.num.child, flag_legend_order_reverse,
+                                    color_parent_process, color_children_process,
+                                    delta_y = 0.15) {
+  fontsize_text <- 3
+  fontsize_theme <- 9
+  theme.legend.key.size_value <- 4
+  theme.legend.key.size_unit <- "mm"
+  theme.legend.spacing.x_value <- 1
+  theme.legend.spacing.x_unit <- "mm"
+  
+  f <- ggplot(clean.summary.when.max_modelarray, aes(fill=process, y=memory_GB, x=ncore)) + 
+                    geom_bar(position="stack", stat="identity", width = 0.3) + 
+                  geom_text(aes(x = ncore, y = total.RSS.GB.+delta_y, label = sprintf("%0.2f", round(total.RSS.GB., digits = 2)), fill = NULL), data = totals_modelarray, size = fontsize_text, family = "Arial") +
+                  scale_x_discrete(limits=c("1","2","3","4")) +
+                   scale_fill_manual(values= c(color_parent_process, color_children_process[1:roof.num.child]) %>% rev(),
+                                     guide = guide_legend(reverse=flag_legend_order_reverse)) +
+                  theme_bw() + 
+                  # theme(aspect.ratio = 0.8,
+                  #       text = element_text(size=15, family="Arial")) +
+                  theme(text = element_text(size = fontsize_theme, family="Arial"),
+                        legend.position="bottom",
+                        legend.key.size = unit(theme.legend.key.size_value, theme.legend.key.size_unit),
+                        legend.spacing.x = unit(theme.legend.spacing.x_value, theme.legend.spacing.x_unit)) +
+                  xlab("Number of CPU cores") +
+                  ylab("Max memory (GB)") +
+                  ggtitle(paste0("ModelArray.lm(): Nsubj = ", toString(nsubj)))
+  
+  return(f)
+}
 
+plotGen_compare_diffncores <- function(totals_modelarray, totals_mrtrix,
+                                       nsubj,
+                                       color_mrtrix, color_modelarray,
+                                       delta_y = 0.5) {
+  
+  # adjust a bit before combination:
+  totals_modelarray_ready <- totals_modelarray
+  totals_modelarray_ready <- rename(totals_modelarray_ready, nparallel = ncore)   # new.col.name = old.col.name
+  totals_modelarray_ready <- rename(totals_modelarray_ready, ModelArray = total.RSS.GB.) 
+  totals_modelarray_ready <- select(totals_modelarray_ready, -total.RSS.MB.)   # remove a column
+  
+  totals_mrtrix_ready <- totals_mrtrix
+  totals_mrtrix_ready <- rename(totals_mrtrix_ready, nparallel = nthreads)
+  totals_mrtrix_ready <- rename(totals_mrtrix_ready, MRtrix = max.RSS.GB.)
+  totals_mrtrix_ready <- select(totals_mrtrix_ready, -max.RSS.MB.)
+  
+  # combine:
+  together_totals <- merge(totals_modelarray_ready, totals_mrtrix_ready, by = c("nsubj","nparallel"))
+  testthat::expect_equal(unique(together_totals[["nsubj"]]), nsubj) # there should be only one unique value of nparallel
+  together_totals <- together_totals %>% tidyr::pivot_longer(cols = c("ModelArray","MRtrix"), names_to="software", values_to="max.total.GB.")
+  together_totals$software <- factor(together_totals$software, 
+                                     levels = c("MRtrix","ModelArray") )
+  
+  
+  fontsize_text <- 3
+  fontsize_theme <- 9
+  theme.legend.key.size_value <- 4
+  theme.legend.key.size_unit <- "mm"
+  theme.legend.spacing.x_value <- 1
+  theme.legend.spacing.x_unit <- "mm"
+  
+  f <- ggplot(together_totals, aes(fill=software, y=max.total.GB., x=nparallel)) + 
+                geom_bar(position = position_dodge(width = 0.6), stat="identity", width=0.6) +     # position="dodge"
+              scale_fill_manual(values= c(color_mrtrix, color_modelarray) ) +
+              geom_text(position = position_dodge(width = 0.8), 
+                        aes(y=max.total.GB.+delta_y, label=sprintf("%0.2f", round(max.total.GB., digits=2)), hjust=0.4), 
+                        size = fontsize_text, angle=0, family = "Arial") + 
+              #ylim(0, 53) + 
+              scale_x_continuous(breaks = c(totals_modelarray_ready$nparallel)) +
+              theme_bw() + 
+              # theme(aspect.ratio = 0.8,
+              #       text = element_text(size=15, family="Arial") ) +
+              theme(text = element_text(size = fontsize_theme, family="Arial"),
+                    legend.position="bottom",
+                    legend.key.size = unit(theme.legend.key.size_value, theme.legend.key.size_unit),
+                    legend.spacing.x = unit(theme.legend.spacing.x_value, theme.legend.spacing.x_unit)) +
+              xlab("Number of threads (or cores)") + 
+              ylab("Max memory (GB)") + 
+              ggtitle(paste0("Comparison: Nsubj = ",toString(nsubj)))
+  
+  return(f)
+}
+
+```
 ## set up: loading .xlsx of benchmarking folder names:
 ```{r inputs}
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -340,7 +429,7 @@ csv_foldernames_ModelArray <- "benchmark_memory_foldernames_ModelArrayLM.csv"
 ModelArray_commitSHA_short <- "0911c4f" 
 #ModelArrayPaper_commitSHA_short <- "94ed85f"
 
-idx_repeat_modelarray <- 3  # +++++++++++++++++= 1,2,3 or "median"
+idx_repeat_modelarray <- "median"  # +++++++++++++++++= 1,2,3 or "median"
 idx_repeat_mrtrix <- 1  # +++++++++++++++++++ 1,2,3 or "median"
 
 flag_where_now <- "vmware"  # where currently this script is running
@@ -352,6 +441,11 @@ color_mrtrix <- "#909090"
 color_modelarray <- "#248B46"
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+if (flag_where_now == "vmware") {
+  main.folder.modelarray <- "/home/chenying/Desktop/fixel_project/FixelArray_benchmark"
+  main.folder.mrtrix <- "/home/chenying/Desktop/fixel_project/data/data_from_josiane/for_fixelcfestats/stats_FDC"
+  main.folder.figures <- "/home/chenying/Desktop/fixel_project/ModelArray_paper/figures"
+}
 
 t_modelarray <- read.csv(csv_foldernames_ModelArray)
 # t_modelarray <- t_modelarray[-c(9,12),]
@@ -366,10 +460,7 @@ nrepeat.total.mrtrix <- check_table_foldernames(t_mrtrix, which_software="mrtrix
 t_mrtrix <- get_maxMemory_N_medianRepeat(t_mrtrix, "mrtrix", nrepeat.total.mrtrix, 
                                          main.folder.mrtrix, roof.num.child=NULL)
 
-if (flag_where_now == "vmware") {
-  main.folder.modelarray <- "/home/chenying/Desktop/fixel_project/FixelArray_benchmark"
-  main.folder.mrtrix <- "/home/chenying/Desktop/fixel_project/data/data_from_josiane/for_fixelcfestats/stats_FDC"
-}
+
 
 str_repeat_modelarray <- ifelse(idx_repeat_modelarray == "median",
                                 "repeat_median",    # when taking the median repeat
@@ -406,6 +497,7 @@ t_mrtrix$rough.total.time.sec <- rough.total.time.sec.mrtrix
 ```{r}
 nsubj = 30
 roof.num.child = 4
+flag_legend_order_reverse = TRUE   # TRUE for legend at bottom in final figure; FALSE for legend at side
 
 foldernames.list.modelarray <- t_modelarray[[str_repeat_modelarray]][t_modelarray$nsubj == nsubj]
 foldernames.list.modelarray <- sort(foldernames.list.modelarray) %>% gtools::mixedsort(decreasing = TRUE)
@@ -432,62 +524,43 @@ totals_mrtrix
 
 
 ### figure a: ModelArray.lm()
-f_modelarray <- ggplot(clean.summary.when.max_modelarray, aes(fill=process, y=memory_GB, x=ncore)) + 
-                    geom_bar(position="stack", stat="identity", width = 0.3) + 
-                  geom_text(aes(x = ncore, y = total.RSS.GB.+5*0.03, label = sprintf("%0.2f", round(total.RSS.GB., digits = 2)), fill = NULL), data = totals_modelarray, size=5) +
-                  scale_x_discrete(limits=c("1","2","3","4")) +
-                   scale_fill_manual(values= c(color_parent_process, color_children_process[1:roof.num.child]) %>% rev() ) +
-                  theme_bw() + 
-                  theme(aspect.ratio = 0.8,
-                        text = element_text(size=16)) +
-                  xlab("Number of CPU cores") +
-                  ylab("Max memory (GB)") +
-                  ggtitle(paste0("ModelArray.lm(): nsubj=", toString(nsubj)))
+f_modelarray <- vector("list", length = 2)  # create an empty list
+f_modelarray[[1]] <- plotGen_modelarray_diffncores(clean.summary.when.max_modelarray, totals_modelarray, 
+                                              nsubj = nsubj, roof.num.child = roof.num.child,
+                                              flag_legend_order_reverse, color_parent_process, color_children_process)
 
-f_modelarray
+f_modelarray[[1]]
 
 
 ### figure b: comparison
-# adjust a bit before combination:
-totals_modelarray_ready <- totals_modelarray
-totals_modelarray_ready <- rename(totals_modelarray_ready, nparallel = ncore)   # new.col.name = old.col.name
-totals_modelarray_ready <- rename(totals_modelarray_ready, ModelArray = total.RSS.GB.) 
-totals_modelarray_ready <- select(totals_modelarray_ready, -total.RSS.MB.)   # remove a column
+f_compare <- vector("list", length = 2)  # create an empty list
+f_compare[[1]] <- plotGen_compare_diffncores(totals_modelarray, totals_mrtrix,
+                                       nsubj = nsubj,
+                                       color_mrtrix, color_modelarray,
+                                       delta_y = 0.5)
 
-totals_mrtrix_ready <- totals_mrtrix
-totals_mrtrix_ready <- rename(totals_mrtrix_ready, nparallel = nthreads)
-totals_mrtrix_ready <- rename(totals_mrtrix_ready, MRtrix = max.RSS.GB.)
-totals_mrtrix_ready <- select(totals_mrtrix_ready, -max.RSS.MB.)
-
-# combine:
-together_totals <- merge(totals_modelarray_ready, totals_mrtrix_ready, by = c("nsubj","nparallel"))
-testthat::expect_equal(unique(together_totals[["nsubj"]]), nsubj) # there should be only one unique value of nparallel
-together_totals <- together_totals %>% tidyr::pivot_longer(cols = c("ModelArray","MRtrix"), names_to="software", values_to="max.total.GB.")
-together_totals$software <- factor(together_totals$software, 
-                                   levels = c("MRtrix","ModelArray") )
-
-f_compare <- ggplot(together_totals, aes(fill=software, y=max.total.GB., x=nparallel)) + 
-                geom_bar(position="dodge", stat="identity", width=0.6) + 
-              scale_fill_manual(values= c(color_mrtrix, color_modelarray) ) +
-              geom_text(position = position_dodge(width = 0.6), 
-                        aes(y=max.total.GB.+8*0.05, label=sprintf("%0.2f", round(max.total.GB., digits=2)), hjust=0.4), 
-                        size=5, angle=0) + 
-              #ylim(0, 53) + 
-              scale_x_continuous(breaks = c(totals_modelarray_ready$nparallel)) +
-              theme_bw() + 
-              theme(aspect.ratio = 0.8,
-                    text = element_text(size=15, family="Arial") ) +
-              xlab("Number of threads (or cores)") + 
-              ylab("Max memory (GB)") + 
-              ggtitle(paste0("Comparison: nsubj = ",toString(nsubj)))
-f_compare
-
+f_compare[[1]]
 
 ```
 
 ## number of subject = 938
 ```{r}
 nsubj = 938
+roof.num.child = 4
+flag_legend_order_reverse = TRUE   # TRUE for legend at bottom in final figure; FALSE for legend at side
+
+foldernames.list.modelarray <- t_modelarray[[str_repeat_modelarray]][t_modelarray$nsubj == nsubj]
+foldernames.list.modelarray <- sort(foldernames.list.modelarray) %>% gtools::mixedsort(decreasing = TRUE)
+folders.list.modelarray <- file.path(main.folder.modelarray,  foldernames.list.modelarray)
+foldernames.list.modelarray
+  
+out_modelarray <- results_modelarray(folders.list.modelarray, roof.num.child = roof.num.child)
+totals_modelarray <- out_modelarray$totals
+summary.when.max_modelarray <- out_modelarray$summary.when.max
+clean.summary.when.max_modelarray <- out_modelarray$clean.summary.when.max
+totals_modelarray
+summary.when.max_modelarray
+
 
 foldernames.list.mrtrix <- t_mrtrix[[str_repeat_mrtrix]][t_mrtrix$nsubj == nsubj]
 foldernames.list.mrtrix <- sort(foldernames.list.mrtrix) %>% gtools::mixedsort(decreasing = TRUE)
@@ -495,8 +568,54 @@ folders.list.mrtrix <- file.path(main.folder.mrtrix,  foldernames.list.mrtrix)
 foldernames.list.mrtrix
 
 theresults <- results_mrtrix(folders.list.mrtrix)
-summary.max.mrtrix <- theresults$summary.max
-summary.max.mrtrix
+totals_mrtrix <- theresults$summary.max
+totals_mrtrix
+#theresults$myplots[[4]]
+
+
+### figure a: ModelArray.lm()
+f_modelarray[[2]] <- plotGen_modelarray_diffncores(clean.summary.when.max_modelarray, totals_modelarray, 
+                                              nsubj = nsubj, roof.num.child = roof.num.child,
+                                              flag_legend_order_reverse, color_parent_process, color_children_process)
+
+f_modelarray[[2]]
+
+
+### figure b: comparison
+f_compare[[2]] <- plotGen_compare_diffncores(totals_modelarray, totals_mrtrix,
+                                       nsubj = nsubj,
+                                       color_mrtrix, color_modelarray,
+                                       delta_y = 2.5)
+
+f_compare[[2]]
+
+
+
+### all panels together:
+## option 1: merging 4 panels at once:
+p_together <- f_modelarray[[1]] + f_compare[[1]] + f_modelarray[[2]] + f_compare[[2]] + plot_layout(heights = unit(c(50,50), c('mm','mm')), widths = unit(c(50,60), c('mm','mm')), guides = 'collect') & theme(legend.position = 'bottom', legend.justification = "left")
+
+## option 2: merge 2 panels at first, then merge together # process legend on left, software legend on right: # not use for both bottom, otherwise, the process legend is long and will be covered by right figures....
+# p_modelarray <- f_modelarray + f_modelarray + plot_layout(heights = unit(c(3,3), c('in', 'in')), widths = unit(c(3), c('in')), guides = 'collect') & theme(legend.position = 'left') 
+# p_compare <- f_compare + f_compare + plot_layout(heights = unit(c(3,3), c('in', 'in')), widths = unit(c(4), c('in')), guides = 'collect') & theme(legend.position = 'right')
+# 
+# p_together <- (p_modelarray | p_compare ) + plot_layout(heights = unit(c(6,6), c('in','in')), widths = unit(c(3,4), c('in','in'))) 
+
+
+# p_diffncore_nsubj938 <- patchwork::wrap_plots(f_modelarray, f_compare, ncol = 2) + 
+#                             guide_area() +
+#                             plot_layout(guides = "collect") 
+# p_diffncore <- patchwork::wrap_plots(p_diffncore_nsubj30, p_diffncore_nsubj938, nrow = 2) + 
+#                             guide_area() +
+#                             plot_layout(guides = "collect") 
+
+list_ext_figure <- c("jpeg", "svg")
+for (ext_figure in list_ext_figure) {
+  ggsave(file.path(main.folder.figures,
+                 paste0("figure_ncore-diff_compare.", ext_figure) ),
+       plot = p_together, device = ext_figure, dpi = 300, width = 140, height = 150, units = "mm")   # 
+}
+
 ```
 
 ## number of cores (threads) = 4:
@@ -544,8 +663,9 @@ f_modelarray <- ggplot(clean.summary.when.max_modelarray, aes(fill=process, y=me
 
 f_modelarray
 
-ggsave("/home/chenying/Desktop/fixel_project/ModelArray_paper/figures/figure_diffSubj_ModelArrayLM.png",
-       plot = f_modelarray, device = "png", dpi = 300, width = 7, height = 7, units = "in")  # default size in Rmd is 7x7 inches
+ggsave(file.path(main.folder.figures, 
+                 paste0("figure_nsubj-diff_ncore-", toString(ncpus),"_ModelArrayLM.jpg") ),
+       plot = f_modelarray, device = "jpeg", dpi = 300, width = 7, height = 7, units = "in")  # default size in Rmd is 7x7 inches
 # but the dpi is still 96 (checked on windows computer...)
 # 
 # png("/home/chenying/Desktop/fixel_project/ModelArray_paper/figures/figure_diffSubj_ModelArrayLM.png",
