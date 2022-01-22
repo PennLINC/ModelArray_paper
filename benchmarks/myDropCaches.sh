@@ -7,6 +7,6 @@ sync
 echo $thatsit | sudo -S sh -c "echo 3 > /proc/sys/vm/drop_caches"
 echo "dropping caches: exit = $?"
 
-sleeptime="20"   # sec
+sleeptime="60"   # sec
 echo "sleep for ${sleeptime} sec for dropping caches to take effects..."
 sleep $sleeptime
