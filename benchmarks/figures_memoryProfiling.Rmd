@@ -12,7 +12,7 @@ list.of.packages <- c(#"readxl",  # reading xlsx
                       #"ggrepel",   # for non-overlapping text in ggplot2
                       "egg", "grid",  # set ggplot2 panel size and plot ggplot2 --> not shown up in Rmd?
                       "patchwork",    # for multiple panels in one figure
-                      "svglite",   # for ggsave() as .svg 
+                      "svglite"   # for ggsave() as .svg 
                       )     
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
@@ -133,7 +133,7 @@ check_table_foldernames <- function(t, which_software,
 #' @param main.folder Main folder of the results, depending on software
 #' @param roof.num.child Number of possible child processes, NULL for mrtrix
 #' @return updated t after adding columns: repeat*_max_total_GB, repeat_median_max_total_GB, idx_repeat_median, and repeat_median (the foldername of repeat with median maxGB)
-#' TODO: to test out mrtrix's !!!!!!!!!!!!! +++++++++++++++++++++++++++==
+#' Test: tested with all 10 conditions in ModelArray.lm() and MRtrix fixelcfestats lm. 2022.1.23.
 get_maxMemory_N_medianRepeat <- function(t, which_software, nrepeat_total, 
                                          main.folder, roof.num.child=NULL) {
   ## set up
@@ -261,7 +261,7 @@ results_modelarray <- function(folder.list, roof.num.child) {
   
   }
   clean.summary.when.max <- clean.summary.when.max %>% 
-    tidyr::pivot_longer(cols = colnames_parentNchild, names_to="process", values_to="memory_MB")
+    tidyr::pivot_longer(cols = all_of(colnames_parentNchild), names_to="process", values_to="memory_MB")
 
   # convert to GB:
   clean.summary.when.max <- clean.summary.when.max %>% mutate(memory_GB = memory_MB /1024,
@@ -430,7 +430,7 @@ ModelArray_commitSHA_short <- "0911c4f"
 #ModelArrayPaper_commitSHA_short <- "94ed85f"
 
 idx_repeat_modelarray <- "median"  # +++++++++++++++++= 1,2,3 or "median"
-idx_repeat_mrtrix <- 1  # +++++++++++++++++++ 1,2,3 or "median"
+idx_repeat_mrtrix <- "median"  # +++++++++++++++++++ 1,2,3 or "median"
 
 flag_where_now <- "vmware"  # where currently this script is running
 
@@ -663,10 +663,12 @@ f_modelarray <- ggplot(clean.summary.when.max_modelarray, aes(fill=process, y=me
 
 f_modelarray
 
-ggsave(file.path(main.folder.figures, 
-                 paste0("figure_nsubj-diff_ncore-", toString(ncpus),"_ModelArrayLM.jpg") ),
-       plot = f_modelarray, device = "jpeg", dpi = 300, width = 7, height = 7, units = "in")  # default size in Rmd is 7x7 inches
-# but the dpi is still 96 (checked on windows computer...)
+# ggsave(file.path(main.folder.figures, 
+#                  paste0("figure_nsubj-diff_ncore-", toString(ncpus),"_ModelArrayLM.jpg") ),
+#        plot = f_modelarray, device = "jpeg", dpi = 300, width = 7, height = 7, units = "in")  # default size in Rmd is 7x7 inches
+
+
+
 # 
 # png("/home/chenying/Desktop/fixel_project/ModelArray_paper/figures/figure_diffSubj_ModelArrayLM.png",
 #     res = 300)

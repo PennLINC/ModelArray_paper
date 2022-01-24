@@ -143,7 +143,7 @@ timeSeriesPlot <- function(df, unit.time = "second", unit.memory = "MB",str.titl
 #' @param roof.num.child The maximum number of child processes expected (useful when summarizing different number of cores). The actual number of cores will be automatically detected from filename.
 #' @param sample_sec Sampling every _ seconds; if the folder name includes it, please assign "NULL" or not to assign value!
 
-summaryMemProfiling <- function(folder, profiling.setup = "devtools", roof.num.child =4, sample_sec=NULL) {
+summaryMemProfiling <- function(folder, profiling.setup = "devtools", roof.num.child =4, sample_sec=NULL, output_df_dim = c(602229,9)) {
     
   
   
@@ -176,6 +176,19 @@ summaryMemProfiling <- function(folder, profiling.setup = "devtools", roof.num.c
     }
     
   } 
+  
+  
+  # CHECK IF THE OUTPUT DIMENSION IS AS EXPECTED:   # NOTE: assumption: there is not other (same) dimension outputs....
+  #tempstr <- paste0("dimension of lm.outputs:\n[1] ",toString(output_df_dim[1]),"\t",toString(output_df_dim[2]))
+  tempstr <- paste0("[1] ",toString(output_df_dim[1]),"      ",toString(output_df_dim[2]))
+  temp <- grep(tempstr,
+               Routput, fixed = TRUE)
+  if (length(temp) == 0) {
+   stop("The output dataframe's dimension is not as expected, or the memory profiling was not as expected")
+    
+  } 
+  
+  
   
   # fp <- file(fn.Routput, "r")
   # flag_devtoolsInstall <- FALSE
