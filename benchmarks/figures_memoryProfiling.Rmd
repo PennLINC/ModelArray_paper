@@ -12,7 +12,8 @@ list.of.packages <- c(#"readxl",  # reading xlsx
                       #"ggrepel",   # for non-overlapping text in ggplot2
                       "egg", "grid",  # set ggplot2 panel size and plot ggplot2 --> not shown up in Rmd?
                       "patchwork",    # for multiple panels in one figure
-                      "svglite"   # for ggsave() as .svg 
+                      "svglite",   # for ggsave() as .svg 
+                      "ggrepel"   # ggplot2 text will not overlap
                       )     
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
@@ -337,7 +338,7 @@ plotGen_modelarray_diffncores <- function(clean.summary.when.max_modelarray,
                                     totals_modelarray,
                                     nsubj, roof.num.child, flag_legend_order_reverse,
                                     color_parent_process, color_children_process,
-                                    delta_y = 0.15) {
+                                    delta_y = 0.15, ylim = c(0,10), flag_ylab = TRUE) {
   fontsize_text <- 3
   fontsize_theme <- 9
   theme.legend.key.size_value <- 4
@@ -351,6 +352,7 @@ plotGen_modelarray_diffncores <- function(clean.summary.when.max_modelarray,
                   scale_x_discrete(limits=c("1","2","3","4")) +
                    scale_fill_manual(values= c(color_parent_process, color_children_process[1:roof.num.child]) %>% rev(),
                                      guide = guide_legend(reverse=flag_legend_order_reverse)) +
+                  ylim(ylim[1], ylim[2]) + 
                   theme_bw() + 
                   # theme(aspect.ratio = 0.8,
                   #       text = element_text(size=15, family="Arial")) +
@@ -359,8 +361,14 @@ plotGen_modelarray_diffncores <- function(clean.summary.when.max_modelarray,
                         legend.key.size = unit(theme.legend.key.size_value, theme.legend.key.size_unit),
                         legend.spacing.x = unit(theme.legend.spacing.x_value, theme.legend.spacing.x_unit)) +
                   xlab("Number of CPU cores") +
-                  ylab("Max memory (GB)") +
                   ggtitle(paste0("ModelArray.lm(): Nsubj = ", toString(nsubj)))
+
+  if (flag_ylab == TRUE) {
+    f <- f + ylab("Max memory (GB)")
+  } else {
+    f <- f + ylab(NULL)
+  }
+  
   
   return(f)
 }
@@ -368,7 +376,7 @@ plotGen_modelarray_diffncores <- function(clean.summary.when.max_modelarray,
 plotGen_compare_diffncores <- function(totals_modelarray, totals_mrtrix,
                                        nsubj,
                                        color_mrtrix, color_modelarray,
-                                       delta_y = 0.5) {
+                                       delta_y = 0.5, ylim = c(0,52), flag_ylab = TRUE) {
   
   # adjust a bit before combination:
   totals_modelarray_ready <- totals_modelarray
@@ -402,7 +410,7 @@ plotGen_compare_diffncores <- function(totals_modelarray, totals_mrtrix,
               geom_text(position = position_dodge(width = 0.8), 
                         aes(y=max.total.GB.+delta_y, label=sprintf("%0.2f", round(max.total.GB., digits=2)), hjust=0.4), 
                         size = fontsize_text, angle=0, family = "Arial") + 
-              #ylim(0, 53) + 
+              ylim(ylim[1], ylim[2]) + 
               scale_x_continuous(breaks = c(totals_modelarray_ready$nparallel)) +
               theme_bw() + 
               # theme(aspect.ratio = 0.8,
@@ -412,12 +420,138 @@ plotGen_compare_diffncores <- function(totals_modelarray, totals_mrtrix,
                     legend.key.size = unit(theme.legend.key.size_value, theme.legend.key.size_unit),
                     legend.spacing.x = unit(theme.legend.spacing.x_value, theme.legend.spacing.x_unit)) +
               xlab("Number of threads (or cores)") + 
-              ylab("Max memory (GB)") + 
               ggtitle(paste0("Comparison: Nsubj = ",toString(nsubj)))
+  if (flag_ylab == TRUE) {
+    f <- f + ylab("Max memory (GB)")
+  } else {
+    f <- f + ylab(NULL)
+  }
   
   return(f)
 }
 
+plotGen_modelarray_diffsubj <- function(clean.summary.when.max_modelarray, totals_modelarray, 
+                                        ncpus, flag_legend_order_reverse,
+                                        color_parent_process, color_children_process,
+                                        delta_y=0.2, ylim = c(0,3.1)) {
+  
+  fontsize_text <- 3
+  fontsize_theme <- 9
+  theme.legend.key.size_value <- 4
+  theme.legend.key.size_unit <- "mm"
+  theme.legend.spacing.x_value <- 1
+  theme.legend.spacing.x_unit <- "mm"
+  
+  f <- ggplot(clean.summary.when.max_modelarray, aes(fill=process, y=memory_GB, x=nsubj)) + 
+                  geom_bar(position="stack", stat="identity") + 
+                geom_text(aes(x = nsubj, y = total.RSS.GB.+delta_y, label = sprintf("%0.2f", round(total.RSS.GB., digits = 2)), fill = NULL),
+                          data = totals_modelarray, size=fontsize_text, angle = 30, family = "Arial") +   # , hjust = 0, nudge_x = -0.05, vjust = 0
+                scale_x_continuous(breaks = c(summary.when.max_modelarray$nsubj)) +
+                scale_fill_manual(values= c( color_parent_process, color_children_process[1:ncpus] ) %>% rev(),
+                                  guide = guide_legend(reverse=flag_legend_order_reverse)) + 
+                theme_bw() +
+                ylim(ylim[1], ylim[2]) + 
+                theme(#aspect.ratio = 0.8,
+                      text = element_text(size=fontsize_theme, family="Arial"),
+                      legend.key.size = unit(theme.legend.key.size_value, theme.legend.key.size_unit),
+                      legend.spacing.x = unit(theme.legend.spacing.x_value, theme.legend.spacing.x_unit))+
+                      #axis.text.x = element_text(angle=45, hjust=1)) + 
+                xlab("Number of subjects") +
+                ylab("Max memory (GB)") +
+                ggtitle(paste0("ModelArray.lm(): Ncores = ", toString(ncpus)))
+  
+  return(f)
+}
+
+
+plotGen_mrtrix_diffsubj <- function(totals_mrtrix, ncpus, 
+                                    color_mrtrix, delta_y) {
+  
+  fontsize_text <- 3
+  fontsize_theme <- 9
+  theme.legend.key.size_value <- 4
+  theme.legend.key.size_unit <- "mm"
+  theme.legend.spacing.x_value <- 1
+  theme.legend.spacing.x_unit <- "mm"
+  
+  f <- ggplot(totals_mrtrix, aes(y = max.RSS.GB., x = nsubj)) +
+              geom_bar(stat="identity", width = 60, fill = color_mrtrix) +
+              geom_text(data = totals_mrtrix, aes(x = nsubj, y = max.RSS.GB. + delta_y, label = sprintf("%0.2f", round(max.RSS.GB., digits = 2)), fill = NULL),
+                        size = fontsize_text, angle = 0, family = "Arial") + 
+              scale_x_continuous(breaks = c(totals_mrtrix$nsubj)) +
+              theme_bw() +
+              theme(aspect.ratio = 0.8,
+                    text = element_text(size=fontsize_theme, family="Arial"),
+                    legend.key.size = unit(theme.legend.key.size_value, theme.legend.key.size_unit),
+                    legend.spacing.x = unit(theme.legend.spacing.x_value, theme.legend.spacing.x_unit))+
+              xlab("Number of subjects") +
+              ylab("Max memory (GB)") +
+              ggtitle(paste0("MRtrix fixelcfestats: Nthreads = ", toString(ncpus)))
+  
+  return(f)
+}
+
+
+#' theme.legend.position: can be "right" or c(0.6,0.2)
+plotGen_compare_diffsubj <- function(totals_modelarray, totals_mrtrix, ncpus, 
+                                     color_mrtrix, color_modelarray, 
+                                     delta_y=2.5, ylim = c(0,52), angle_text = 30, theme.legend.position = "right", flag_ylab = TRUE) {
+  # adjust a bit before combination:
+  totals_modelarray_ready <- totals_modelarray
+  totals_modelarray_ready <- rename(totals_modelarray_ready, nparallel = ncore)   # new.col.name = old.col.name
+  totals_modelarray_ready <- rename(totals_modelarray_ready, ModelArray = total.RSS.GB.) 
+  totals_modelarray_ready <- select(totals_modelarray_ready, -total.RSS.MB.)   # remove a column
+  
+  totals_mrtrix_ready <- totals_mrtrix
+  totals_mrtrix_ready <- rename(totals_mrtrix_ready, nparallel = nthreads)
+  totals_mrtrix_ready <- rename(totals_mrtrix_ready, MRtrix = max.RSS.GB.)
+  totals_mrtrix_ready <- select(totals_mrtrix_ready, -max.RSS.MB.)
+  
+  # combine:
+  together_totals <- merge(totals_modelarray_ready, totals_mrtrix_ready, by = c("nsubj","nparallel"))
+  testthat::expect_equal(unique(together_totals[["nparallel"]]), ncpus) # there should be only one unique value of nparallel
+  together_totals <- together_totals %>% tidyr::pivot_longer(cols = c("ModelArray","MRtrix"), names_to="software", values_to="max.total.GB.")
+  together_totals$software <- factor(together_totals$software, 
+                                     levels = c("MRtrix","ModelArray") )
+  
+  
+  fontsize_text <- 3
+  fontsize_theme <- 9
+  theme.legend.key.size_value <- 4
+  theme.legend.key.size_unit <- "mm"
+  theme.legend.spacing.x_value <- 1
+  theme.legend.spacing.x_unit <- "mm"
+  
+  f <- ggplot(together_totals, aes(fill=software, y=max.total.GB., x=nsubj)) + 
+                  geom_bar(position="dodge", stat="identity") + 
+                scale_fill_manual(values= c(color_mrtrix, color_modelarray) ) +
+                geom_text(position = position_dodge(width = 100),     # ggrepel::geom_text_repel()
+                          #position = position_jitterdodge(dodge.width = 50, jitter.width = 20), 
+                          aes(y=max.total.GB.+delta_y, label=sprintf("%0.2f", round(max.total.GB., digits=2)), hjust=0.4),   # , hjust=0.3 # , hjust="middle"
+                          size=fontsize_text, angle=angle_text, family = "Arial" ) + 
+                ylim(ylim[1], ylim[2]) + 
+                scale_x_continuous(breaks = c(totals_modelarray_ready$nsubj)) +
+                theme_bw() + 
+                theme(#aspect.ratio = 1/2,
+                      text = element_text(size=fontsize_theme, family="Arial"),
+                      legend.position = theme.legend.position,
+                      legend.key.size = unit(theme.legend.key.size_value, theme.legend.key.size_unit),
+                      legend.spacing.x = unit(theme.legend.spacing.x_value, theme.legend.spacing.x_unit)) +
+                xlab("Number of subjects") + 
+                ggtitle(paste0("Comparison: Nthreads (Ncores) = ",toString(ncpus)))
+  
+  if (class(theme.legend.position) == "numeric") {  # if within the plot
+    f <- f + guides(color=guide_legend(override.aes=list(fill=NA)))   # change the legend's background to transparent
+  }
+  
+  if (flag_ylab == TRUE) {
+    f <- f + ylab("Max memory (GB)")
+  } else {
+    f <- f + ylab(NULL)
+  }
+
+  return(f)
+}
 ```
 ## set up: loading .xlsx of benchmarking folder names:
 ```{r inputs}
@@ -497,7 +631,9 @@ t_mrtrix$rough.total.time.sec <- rough.total.time.sec.mrtrix
 ```{r}
 nsubj = 30
 roof.num.child = 4
-flag_legend_order_reverse = TRUE   # TRUE for legend at bottom in final figure; FALSE for legend at side
+flag_legend_order_reverse = FALSE   # TRUE for legend at bottom in final figure; FALSE for legend at side
+ylim_modelarray <- c(0,3)
+ylim_compare <- c(0,52)
 
 foldernames.list.modelarray <- t_modelarray[[str_repeat_modelarray]][t_modelarray$nsubj == nsubj]
 foldernames.list.modelarray <- sort(foldernames.list.modelarray) %>% gtools::mixedsort(decreasing = TRUE)
@@ -527,7 +663,8 @@ totals_mrtrix
 f_modelarray <- vector("list", length = 2)  # create an empty list
 f_modelarray[[1]] <- plotGen_modelarray_diffncores(clean.summary.when.max_modelarray, totals_modelarray, 
                                               nsubj = nsubj, roof.num.child = roof.num.child,
-                                              flag_legend_order_reverse, color_parent_process, color_children_process)
+                                              flag_legend_order_reverse, color_parent_process, color_children_process,
+                                              ylim = ylim_modelarray)
 
 f_modelarray[[1]]
 
@@ -537,7 +674,7 @@ f_compare <- vector("list", length = 2)  # create an empty list
 f_compare[[1]] <- plotGen_compare_diffncores(totals_modelarray, totals_mrtrix,
                                        nsubj = nsubj,
                                        color_mrtrix, color_modelarray,
-                                       delta_y = 0.5)
+                                       delta_y = 2.5, ylim = ylim_compare)
 
 f_compare[[1]]
 
@@ -547,7 +684,7 @@ f_compare[[1]]
 ```{r}
 nsubj = 938
 roof.num.child = 4
-flag_legend_order_reverse = TRUE   # TRUE for legend at bottom in final figure; FALSE for legend at side
+flag_legend_order_reverse = FALSE   # TRUE for legend at bottom in final figure; FALSE for legend at side
 
 foldernames.list.modelarray <- t_modelarray[[str_repeat_modelarray]][t_modelarray$nsubj == nsubj]
 foldernames.list.modelarray <- sort(foldernames.list.modelarray) %>% gtools::mixedsort(decreasing = TRUE)
@@ -576,7 +713,8 @@ totals_mrtrix
 ### figure a: ModelArray.lm()
 f_modelarray[[2]] <- plotGen_modelarray_diffncores(clean.summary.when.max_modelarray, totals_modelarray, 
                                               nsubj = nsubj, roof.num.child = roof.num.child,
-                                              flag_legend_order_reverse, color_parent_process, color_children_process)
+                                              flag_legend_order_reverse, color_parent_process, color_children_process,
+                                              ylim = ylim_modelarray, flag_ylab = FALSE)
 
 f_modelarray[[2]]
 
@@ -585,7 +723,8 @@ f_modelarray[[2]]
 f_compare[[2]] <- plotGen_compare_diffncores(totals_modelarray, totals_mrtrix,
                                        nsubj = nsubj,
                                        color_mrtrix, color_modelarray,
-                                       delta_y = 2.5)
+                                       delta_y = 2.5,
+                                       ylim = ylim_compare, flag_ylab = FALSE)
 
 f_compare[[2]]
 
@@ -593,7 +732,8 @@ f_compare[[2]]
 
 ### all panels together:
 ## option 1: merging 4 panels at once:
-p_together <- f_modelarray[[1]] + f_compare[[1]] + f_modelarray[[2]] + f_compare[[2]] + plot_layout(heights = unit(c(50,50), c('mm','mm')), widths = unit(c(50,60), c('mm','mm')), guides = 'collect') & theme(legend.position = 'bottom', legend.justification = "left")
+p_together <- f_modelarray[[1]]  + f_modelarray[[2]] + f_compare[[1]] + f_compare[[2]] + plot_layout(nrow=2, heights = unit(c(50,50), c('mm','mm')), widths = unit(c(48, 48), c('mm','mm')), guides = 'collect') & theme(legend.position = 'right')  # , legend.justification = "left"
+# p_together <- (f_modelarray[[1]]  + f_modelarray[[2]])/(f_compare[[1]] + f_compare[[2]]) + plot_layout(nrow=2, heights = unit(c(50,50), c('mm','mm')), widths = unit(c(50,50,60,60), c('mm','mm','mm','mm')), guides = 'collect') & theme(legend.position = 'bottom', legend.justification = "left")
 
 ## option 2: merge 2 panels at first, then merge together # process legend on left, software legend on right: # not use for both bottom, otherwise, the process legend is long and will be covered by right figures....
 # p_modelarray <- f_modelarray + f_modelarray + plot_layout(heights = unit(c(3,3), c('in', 'in')), widths = unit(c(3), c('in')), guides = 'collect') & theme(legend.position = 'left') 
@@ -601,19 +741,11 @@ p_together <- f_modelarray[[1]] + f_compare[[1]] + f_modelarray[[2]] + f_compare
 # 
 # p_together <- (p_modelarray | p_compare ) + plot_layout(heights = unit(c(6,6), c('in','in')), widths = unit(c(3,4), c('in','in'))) 
 
-
-# p_diffncore_nsubj938 <- patchwork::wrap_plots(f_modelarray, f_compare, ncol = 2) + 
-#                             guide_area() +
-#                             plot_layout(guides = "collect") 
-# p_diffncore <- patchwork::wrap_plots(p_diffncore_nsubj30, p_diffncore_nsubj938, nrow = 2) + 
-#                             guide_area() +
-#                             plot_layout(guides = "collect") 
-
 list_ext_figure <- c("jpeg", "svg")
 for (ext_figure in list_ext_figure) {
   ggsave(file.path(main.folder.figures,
                  paste0("figure_ncore-diff_compare.", ext_figure) ),
-       plot = p_together, device = ext_figure, dpi = 300, width = 140, height = 150, units = "mm")   # 
+       plot = p_together, device = ext_figure, dpi = 300, width = 140, height = 135, units = "mm")   # 
 }
 
 ```
@@ -621,6 +753,7 @@ for (ext_figure in list_ext_figure) {
 ## number of cores (threads) = 4:
 ```{r}
 ncpus = 4
+flag_legend_order_reverse <- FALSE    # when legend is at the bottom, use "TRUE"
 
 foldernames.list.modelarray <- t_modelarray[[str_repeat_modelarray]][t_modelarray$ncore == ncpus]
 foldernames.list.modelarray <- sort(foldernames.list.modelarray) %>% gtools::mixedsort(decreasing = TRUE)
@@ -646,100 +779,64 @@ totals_mrtrix
 
 
 ### figure a: ModelArray itself
-f_modelarray <- ggplot(clean.summary.when.max_modelarray, aes(fill=process, y=memory_GB, x=nsubj)) + 
-                  geom_bar(position="stack", stat="identity") + 
-                geom_text(aes(x = nsubj, y = total.RSS.GB.+4*0.05, label = sprintf("%0.2f", round(total.RSS.GB., digits = 2)), fill = NULL),
-                          data = totals_modelarray, size=5, angle = 30) +   # , hjust = 0, nudge_x = -0.05, vjust = 0
-                scale_x_continuous(breaks = c(summary.when.max_modelarray$nsubj)) +
-                scale_fill_manual(values= c( color_parent_process, color_children_process[1:ncpus] ) %>% rev() ) + 
-                theme_bw() +
-                ylim(0, 3.1) + 
-                theme(aspect.ratio = 0.8,
-                      text = element_text(size=16, family="Arial"))+
-                      #axis.text.x = element_text(angle=45, hjust=1)) + 
-                xlab("Number of subjects") +
-                ylab("Max memory (GB)") +
-                ggtitle(paste0("ModelArray.lm(): ncores = ", toString(ncpus)))
+f_modelarray <- plotGen_modelarray_diffsubj(clean.summary.when.max_modelarray, totals_modelarray, 
+                                            ncpus, flag_legend_order_reverse,
+                                            color_parent_process, color_children_process)
 
 f_modelarray
 
-# ggsave(file.path(main.folder.figures, 
-#                  paste0("figure_nsubj-diff_ncore-", toString(ncpus),"_ModelArrayLM.jpg") ),
-#        plot = f_modelarray, device = "jpeg", dpi = 300, width = 7, height = 7, units = "in")  # default size in Rmd is 7x7 inches
-
-
-
-# 
-# png("/home/chenying/Desktop/fixel_project/ModelArray_paper/figures/figure_diffSubj_ModelArrayLM.png",
-#     res = 300)
-# print(f_modelarray)
-# while (!is.null(dev.list()))  dev.off()
-# # but I cannot find the saved .png ....
-
-
-# jpeg("test.jpg",res = 300)
-#jpeg("/home/chenying/Desktop/fixel_project/ModelArray_paper/figures/test.jpg", units="in", width=8.2, height=5.6, res=800)  # this would save out when knitting (instead of running block by block)
-# print(f_modelarray)
-# while (!is.null(dev.list()))  dev.off()
-
 ### figure b: MRtrix itself
 delta_y <- 0.03 * max(totals_mrtrix$max.RSS.GB.)
-f_mrtrix <- ggplot(totals_mrtrix, aes(y = max.RSS.GB., x = nsubj)) +
-              geom_bar(stat="identity", width = 60, fill = color_mrtrix) +
-              geom_text(data = totals_mrtrix, aes(x = nsubj, y = max.RSS.GB. + delta_y, label = sprintf("%0.2f", round(max.RSS.GB., digits = 2)), fill = NULL),
-                        size = 5, angle = 0) + 
-              scale_x_continuous(breaks = c(totals_mrtrix$nsubj)) +
-              theme_bw() +
-              theme(aspect.ratio = 0.8,
-                    text = element_text(size=16, family="Arial"))+
-              xlab("Number of subjects") +
-              ylab("Max memory (GB)") +
-              ggtitle(paste0("MRtrix fixelcfestats: nthreads = ", toString(ncpus)))
+f_mrtrix <- plotGen_mrtrix_diffsubj(totals_mrtrix, ncpus, 
+                                    color_mrtrix, delta_y = delta_y)
 f_mrtrix
 
 ### figure c: comparing MRtrix vs ModelArray
-# adjust a bit before combination:
-totals_modelarray_ready <- totals_modelarray
-totals_modelarray_ready <- rename(totals_modelarray_ready, nparallel = ncore)   # new.col.name = old.col.name
-totals_modelarray_ready <- rename(totals_modelarray_ready, ModelArray = total.RSS.GB.) 
-totals_modelarray_ready <- select(totals_modelarray_ready, -total.RSS.MB.)   # remove a column
-
-totals_mrtrix_ready <- totals_mrtrix
-totals_mrtrix_ready <- rename(totals_mrtrix_ready, nparallel = nthreads)
-totals_mrtrix_ready <- rename(totals_mrtrix_ready, MRtrix = max.RSS.GB.)
-totals_mrtrix_ready <- select(totals_mrtrix_ready, -max.RSS.MB.)
-
-# combine:
-together_totals <- merge(totals_modelarray_ready, totals_mrtrix_ready, by = c("nsubj","nparallel"))
-testthat::expect_equal(unique(together_totals[["nparallel"]]), ncpus) # there should be only one unique value of nparallel
-together_totals <- together_totals %>% tidyr::pivot_longer(cols = c("ModelArray","MRtrix"), names_to="software", values_to="max.total.GB.")
-together_totals$software <- factor(together_totals$software, 
-                                   levels = c("MRtrix","ModelArray") )
-
-
-f_compare <- ggplot(together_totals, aes(fill=software, y=max.total.GB., x=nsubj)) + 
-                geom_bar(position="dodge", stat="identity") + 
-              scale_fill_manual(values= c(color_mrtrix, color_modelarray) ) +
-              geom_text(position = position_dodge(width = 50), 
-                        aes(y=max.total.GB.+50*0.05, label=sprintf("%0.2f", round(max.total.GB., digits=2)), hjust=0.3), 
-                        size=3.5, angle=30) + 
-              ylim(0, 53) + 
-              scale_x_continuous(breaks = c(totals_modelarray_ready$nsubj)) +
-              theme_bw() + 
-              theme(aspect.ratio = 1/2,
-                    text = element_text(size=15, family="Arial") ) +
-              xlab("Number of subjects") + 
-              ylab("Max memory (GB)") + 
-              ggtitle(paste0("Comparison: nthreads (ncores) = ",toString(ncpus)))
+f_compare <- plotGen_compare_diffsubj(totals_modelarray, totals_mrtrix, ncpus, 
+                                       color_mrtrix, color_modelarray, 
+                                       delta_y=2.5, ylim= ylim_compare, angle_text = 0, theme.legend.position = c(0.2,0.8),
+                                      flag_ylab = TRUE)
 f_compare
 
+
+### merge panels:
+
+# layout <- c(
+#   area(1, 1, 1, 4),
+#   area(1, 5),
+#   area(2, 1, 2, 5)
+# )
+# p_together <- f_modelarray + guide_area()   + f_compare + plot_layout(design = layout, nrow=2) # & theme(legend.position = 'right')
+
+layout <- "\n#AB\nCCC\n"
+p_together <- f_modelarray + guide_area()   + f_compare + plot_layout(design = layout, nrow=2, heights = unit(c(50,50), c('mm','mm')), widths = unit(c(10, 60,1), c('mm'))) # & theme(legend.position = 'right')
+final_width <- 140
+final_height <- 140
+
+# p_together <- f_modelarray+ f_compare + plot_layout(nrow=2, heights = unit(c(50,50), c('mm','mm')), widths = unit(c(80), c('mm')), 
+#                                                     guides = 'collect')  & theme(legend.position = 'right')
+
+
+
+
+
+# ## or, in a row:   # with similar bar sizes as figure 2, cannot fit into 140mm final width.....
+# p_together <- f_modelarray  + f_compare + plot_layout(heights = unit(c(50), c('mm')), widths = unit(c(55, 80), c('mm')), guides = 'collect') & theme(legend.position = 'bottom', legend.justification = "left")
+# final_width <- 140
+# final_height <- 80
+
+### save the figure:
+list_ext_figure <- c("jpeg", "svg")
+for (ext_figure in list_ext_figure) {
+  ggsave(file.path(main.folder.figures,
+                 paste0("figure_nsubj-diff_compare.", ext_figure) ),
+       plot = p_together, device = ext_figure, dpi = 300, width = final_width, height = final_height, units = "mm")   # 
+}
 ```
 
 
 
-```{r}
 
-```
 
 
 
