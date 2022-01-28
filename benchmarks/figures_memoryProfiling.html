@@ -168,6 +168,491 @@ pre code {
 </div>
 
 
+<pre class="r"><code># , include = FALSE
+
+rm(list=ls())
+list.of.packages &lt;- c(#&quot;readxl&quot;,  # reading xlsx
+                      &quot;testthat&quot;,
+                      &quot;gtools&quot;,    # for sorting filenames
+                      &quot;dplyr&quot;, &quot;tidyr&quot;, &quot;tibble&quot;, &quot;broom&quot;,&quot;stringr&quot;,&quot;ggplot2&quot;,   # str_match
+                      #&quot;ggrepel&quot;,   # for non-overlapping text in ggplot2
+                      &quot;egg&quot;, &quot;grid&quot;,  # set ggplot2 panel size and plot ggplot2 --&gt; not shown up in Rmd?
+                      &quot;patchwork&quot;,    # for multiple panels in one figure
+                      &quot;svglite&quot;,   # for ggsave() as .svg 
+                      &quot;ggrepel&quot;   # ggplot2 text will not overlap
+                      )     
+new.packages &lt;- list.of.packages[!(list.of.packages %in% installed.packages()[,&quot;Package&quot;])]
+if(length(new.packages)) install.packages(new.packages)
+
+lapply(list.of.packages, require, character.only = TRUE)   # or library</code></pre>
+<pre><code>## Loading required package: testthat</code></pre>
+<pre><code>## Loading required package: gtools</code></pre>
+<pre><code>## Loading required package: dplyr</code></pre>
+<pre><code>## 
+## Attaching package: &#39;dplyr&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:testthat&#39;:
+## 
+##     matches</code></pre>
+<pre><code>## The following objects are masked from &#39;package:stats&#39;:
+## 
+##     filter, lag</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     intersect, setdiff, setequal, union</code></pre>
+<pre><code>## Loading required package: tidyr</code></pre>
+<pre><code>## 
+## Attaching package: &#39;tidyr&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:testthat&#39;:
+## 
+##     matches</code></pre>
+<pre><code>## Loading required package: tibble</code></pre>
+<pre><code>## Loading required package: broom</code></pre>
+<pre><code>## Loading required package: stringr</code></pre>
+<pre><code>## Loading required package: ggplot2</code></pre>
+<pre><code>## Loading required package: egg</code></pre>
+<pre><code>## Loading required package: gridExtra</code></pre>
+<pre><code>## 
+## Attaching package: &#39;gridExtra&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:dplyr&#39;:
+## 
+##     combine</code></pre>
+<pre><code>## Loading required package: grid</code></pre>
+<pre><code>## Loading required package: patchwork</code></pre>
+<pre><code>## Loading required package: svglite</code></pre>
+<pre><code>## Loading required package: ggrepel</code></pre>
+<pre><code>## [[1]]
+## [1] TRUE
+## 
+## [[2]]
+## [1] TRUE
+## 
+## [[3]]
+## [1] TRUE
+## 
+## [[4]]
+## [1] TRUE
+## 
+## [[5]]
+## [1] TRUE
+## 
+## [[6]]
+## [1] TRUE
+## 
+## [[7]]
+## [1] TRUE
+## 
+## [[8]]
+## [1] TRUE
+## 
+## [[9]]
+## [1] TRUE
+## 
+## [[10]]
+## [1] TRUE
+## 
+## [[11]]
+## [1] TRUE
+## 
+## [[12]]
+## [1] TRUE
+## 
+## [[13]]
+## [1] TRUE</code></pre>
+<pre class="r"><code>source(&quot;memoryProfiling_plot.R&quot;)</code></pre>
+<pre><code>## Loading required package: R.utils</code></pre>
+<pre><code>## Loading required package: R.oo</code></pre>
+<pre><code>## Loading required package: R.methodsS3</code></pre>
+<pre><code>## R.methodsS3 v1.8.1 (2020-08-26 16:20:06 UTC) successfully loaded. See ?R.methodsS3 for help.</code></pre>
+<pre><code>## R.oo v1.24.0 (2020-08-26 16:11:58 UTC) successfully loaded. See ?R.oo for help.</code></pre>
+<pre><code>## 
+## Attaching package: &#39;R.oo&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:R.methodsS3&#39;:
+## 
+##     throw</code></pre>
+<pre><code>## The following object is masked from &#39;package:testthat&#39;:
+## 
+##     equals</code></pre>
+<pre><code>## The following objects are masked from &#39;package:methods&#39;:
+## 
+##     getClasses, getMethods</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     attach, detach, load, save</code></pre>
+<pre><code>## R.utils v2.10.1 (2020-08-26 22:50:31 UTC) successfully loaded. See ?R.utils for help.</code></pre>
+<pre><code>## 
+## Attaching package: &#39;R.utils&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:tidyr&#39;:
+## 
+##     extract</code></pre>
+<pre><code>## The following object is masked from &#39;package:gtools&#39;:
+## 
+##     capture</code></pre>
+<pre><code>## The following object is masked from &#39;package:utils&#39;:
+## 
+##     timestamp</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     cat, commandArgs, getOption, inherits, isOpen, nullfile, parse,
+##     warnings</code></pre>
+<pre class="r"><code># , include = FALSE
+
+#&#39; To check if the loaded table of benchmarking foldernames are valid, for MRtrix&#39;s and ModelArray&#39;s
+#&#39; @description Tests include:
+#&#39;  MAsha is as expected (i.e. as argument MAsha)
+#&#39; (not to test MAPsha anymore)
+#&#39;  If all conditions are unique
+#&#39;  The folder names match the condition (number of cores, number of subject)
+#&#39;  All foldernames (across condition and repeats) are unique
+#&#39;  Number of shuffles is as expected (i.e. as argument nshuffles, for MRtrix only) --&gt; all the same
+#&#39; @param t table loaded from .csv file
+#&#39; @param which_software &quot;modelarray&quot; or &quot;mrtrix&quot;
+#&#39; @param MAsha commit SHA for ModelArray. It should be consistent across all runs
+#&#39; @param nshuffles Number of shuffles (MRtrix only)
+#&#39; @param flag_where_profiling_done A character string, where the memory profiling was done
+
+check_table_foldernames &lt;- function(t, which_software, 
+                                    MAsha = NULL, #MAPsha = NULL, 
+                                    nshuffles=NULL,
+                                    flag_where_profiling_done = &quot;vmware&quot;) {
+  
+  ## set up
+  if (which_software == &quot;mrtrix&quot;) {
+    str_ncpus &lt;- &quot;nthreads&quot;
+
+  } else if (which_software == &quot;modelarray&quot;) {
+    str_ncpus &lt;- &quot;ncore&quot;
+
+  } else {
+    stop(&quot;invalid which_software!&quot;)
+  }
+  
+  ## check how many repeats in it
+  nrepeat_total = 0
+  torun_while &lt;- TRUE
+  while (torun_while) {  # always TRUE
+    if ( grep(paste0(&quot;repeat&quot;,toString(nrepeat_total+1)), colnames(t)) %&gt;% length() &gt; 0) {# e.g. is repeat1 in column names of t? if no, length =0
+      nrepeat_total &lt;- nrepeat_total + 1
+    } else {   # not included, current nrepeat_total is the max
+      break
+    }
+  }
+  message(paste0(&quot;detected number of repeats = &quot;, toString(nrepeat_total)))
+  
+  ## the foldername contains expected characters:
+  for (i_repeat in 1:nrepeat_total) {   # iterate columns
+    for (i_row in 1:nrow(t)) {  # iterate rows
+      nsubj &lt;- t$nsubj[i_row]
+      ncpus &lt;- t[[str_ncpus]][i_row]
+      
+      if (which_software == &quot;mrtrix&quot;) {
+        str_MAsha &lt;- &quot;&quot;
+        str_MAPsha &lt;- &quot;&quot;
+        
+        str_expect_include &lt;- paste0(&quot;nsubj-&quot;,toString(nsubj),&quot;.&quot;,
+                                     str_ncpus, &quot;-&quot;, toString(ncpus),&quot;.&quot;,
+                                     &quot;ftests.nshuffles-&quot;,toString(nshuffles),&quot;.&quot;,flag_where_profiling_done,&quot;.runMemProfiler&quot;)
+        
+      } else if (which_software == &quot;modelarray&quot;) {
+        #MAsha &lt;- t$ModelArray_commitSHA[i_row]
+        str_MAsha &lt;- paste0(&quot;MAsha-&quot;,MAsha)
+        
+        #MAPsha &lt;- t$ModelArrayPaper_commitSHA[i_row]
+        #str_MAPsha &lt;- paste0(&quot;MAPsha-&quot;,MAPsha)
+        
+        str_expect_include &lt;- paste0(&quot;lm.josiane.nfixel-0.&quot;,
+                                     &quot;nsubj-&quot;,toString(nsubj),&quot;.&quot;,
+                                      str_ncpus, &quot;-&quot;, toString(ncpus),&quot;.&quot;,
+                                     flag_where_profiling_done, &quot;.runMemProfiler&quot;)
+      }
+      
+      str_actual &lt;- t[[paste0(&quot;repeat&quot;,toString(i_repeat))]][i_row]
+      testthat::expect_true(grepl(str_expect_include, str_actual, fixed = TRUE))
+      
+      testthat::expect_true(grepl(str_MAsha, str_actual, fixed = TRUE))  # contains str_MAsha
+      
+      # not to test MAPsha anymore....
+      #testthat::expect_true(grepl(str_MAPsha, str_actual, fixed = TRUE))   # contains str_MAPsha
+  
+    }
+  }
+  
+  
+  ## check if combinations of conditions are unique:
+  the.unique &lt;- unique(t[,c(&#39;nsubj&#39;,str_ncpus)])
+  testthat::expect_equal(nrow(the.unique),
+                         nrow(t))
+  
+  ## check if all foldernames are unique:
+  all_foldernames &lt;- c()
+  for (i_repeat in 1:nrepeat_total) {
+    all_foldernames &lt;- c(all_foldernames, t[[paste0(&quot;repeat&quot;, toString(i_repeat))]])
+  }
+  testthat::expect_equal(unique(all_foldernames) %&gt;% length(),
+                         nrepeat_total * nrow(t))
+  
+  
+  #toReturn &lt;- list(nrepeat_total = nrepeat_total)
+  return(nrepeat_total)
+  
+}
+
+
+
+#&#39; This is to get the peak memory usage for all repeats + conditions, then get the foldername with the median peak memory usage among all repeats for each condition
+#&#39; @param t table loaded from .csv file
+#&#39; @param which_software &quot;modelarray&quot; or &quot;mrtrix&quot;
+#&#39; @param nrepeat_total number of repeats in total, returned by check_table_foldernames()
+#&#39; @param main.folder Main folder of the results, depending on software
+#&#39; @param roof.num.child Number of possible child processes, NULL for mrtrix
+#&#39; @return updated t after adding columns: repeat*_max_total_GB, repeat_median_max_total_GB, idx_repeat_median, and repeat_median (the foldername of repeat with median maxGB)
+#&#39; Test: tested with all 10 conditions in ModelArray.lm() and MRtrix fixelcfestats lm. 2022.1.23.
+get_maxMemory_N_medianRepeat &lt;- function(t, which_software, nrepeat_total, 
+                                         main.folder, roof.num.child=NULL) {
+  ## set up
+  nconditions &lt;- nrow(t)
+  
+  # drop the existing result columns in t:    
+  for (i_repeat in 1:nrepeat_total) {
+    colname_repeat_value &lt;- paste0(&quot;repeat&quot;,toString(i_repeat),&quot;_max_total_GB&quot;)  # e.g. repeat2_max_total_GB
+    if (colname_repeat_value %in% colnames(t)) {
+      warning(paste0(&quot;The max total GB for repeat &quot;,toString(i_repeat),&quot; has been generated in t; will delete and rerun....&quot;))
+      t &lt;- t %&gt;% dplyr::select(-one_of(colname_repeat_value)) # drop the column
+    }
+  }
+  
+  if (&quot;idx_repeat_median&quot; %in% colnames(t)) {
+    warning(&quot;The column &#39;idx_repeat_median&#39; has been generated in t; will delete and rerun....&quot;)
+    t &lt;- t %&gt;% dplyr::select(-one_of(&quot;idx_repeat_median&quot;)) # drop the column
+  }
+  if (&quot;repeat_median_max_total_GB&quot; %in% colnames(t)) {
+    warning(&quot;The column &#39;repeat_median_max_total_GB&#39; has been generated in t; will delete and rerun....&quot;)
+    t &lt;- t %&gt;% dplyr::select(-one_of(&quot;repeat_median_max_total_GB&quot;)) # drop the column
+  }
+  if (&quot;repeat_median&quot; %in% colnames(t)) {
+    warning(&quot;The column &#39;repeat_median&#39; has been generated in t; will delete and rerun....&quot;)
+    t &lt;- t %&gt;% dplyr::select(-one_of(&quot;repeat_median&quot;)) # drop the column
+  }
+  # +++ if add any new columns to t, need to add to here for deletion, otherwise even though t_values will be merged to t + there will be duplicated columns, when extracting, it will still use the previous value
+  
+  
+  # create t_values for storing new values:
+  t_values &lt;- data.frame(matrix(ncol = nrepeat_total + 3, nrow = nconditions))
+  list_repeat_max_total_GB &lt;- paste(&quot;repeat&quot;, as.character(1:nrepeat_total), &quot;_max_total_GB&quot;,sep=&quot;&quot;)
+  colnames(t_values) &lt;- c(list_repeat_max_total_GB,
+                          &quot;idx_repeat_median&quot;, &quot;repeat_median_max_total_GB&quot;, &quot;repeat_median&quot;)
+
+  
+  ## iterate across repeats (and conditions), get the max total memory usage for each repeat --&gt; add to t_values
+  for (i_repeat in 1:nrepeat_total) {
+    str_repeat &lt;- paste0(&quot;repeat&quot;,toString(i_repeat))
+    colname_repeat_value &lt;- paste0(str_repeat, &quot;_max_total_GB&quot;)
+      
+    foldername.list &lt;- t[[str_repeat]]
+    folder.list &lt;- file.path(main.folder, foldername.list)
+    
+    if (which_software == &quot;modelarray&quot;) {
+      out &lt;- results_modelarray(folder.list, roof.num.child)  
+      t_values[[colname_repeat_value]] &lt;- out$totals[[&quot;total.RSS.GB.&quot;]]
+    } else if (which_software == &quot;mrtrix&quot;) {
+      out &lt;- results_mrtrix(folder.list)
+      t_values[[colname_repeat_value]] &lt;- out$summary.max[[&quot;max.RSS.GB.&quot;]]
+    } else {
+      stop(&quot;invalid &#39;which_software&#39;&quot;)
+    }
+    
+      
+  }
+  
+  
+  ## get the repeat index (and foldername) with the median value --&gt; add to t_values
+  for (i_condition in 1:nconditions) {   # TEST: have tested against manually calcu with modelarray
+    vec &lt;- t_values[i_condition, list_repeat_max_total_GB] %&gt;% as.numeric()
+    quantile50 &lt;- quantile(vec, 0.5)  # using default method to get quantile
+    i_vec &lt;- which.min(abs(vec - quantile50))  # get the i-th in all the list; if exactly the same, still return only one index
+    str_repeat_median_max_total_GB &lt;- list_repeat_max_total_GB[i_vec]  # get the column name, e.g. repeat2_max_total_GB
+    
+    idx_repeat_median &lt;- str_match(str_repeat_median_max_total_GB, &quot;repeat\\s*(.*?)\\s*_max_total_GB&quot;)[2]  %&gt;% as.numeric() # e.g. 2
+    str_repeat_median &lt;- paste0(&quot;repeat&quot;,toString(idx_repeat_median))   # e.g. repeat2
+    foldername_repeat_median &lt;- t[[str_repeat_median]][i_condition]   # e.g. the foldername for repeat2
+    
+    t_values[[&quot;idx_repeat_median&quot;]][i_condition] &lt;- idx_repeat_median
+    t_values[[&quot;repeat_median&quot;]][i_condition] &lt;- foldername_repeat_median
+    t_values[[&quot;repeat_median_max_total_GB&quot;]][i_condition] &lt;- vec[i_vec]   # the memory usage
+  }
+  
+  
+  ## merge t_values to t
+  t &lt;- cbind(t, t_values)
+  ## return t
+  
+}
+
+#&#39; sort the foldernames by a specific factor 
+#&#39; @param foldernames.list a list of foldernames to sort
+#&#39; @param which_software &quot;modelarray&quot; or &quot;mrtrix&quot;
+#&#39; @param bywhat sort by what factor, &quot;ncpus&quot; or &quot;nsubj&quot;
+sort_foldernames &lt;- function(foldernames.list, which_software, bywhat) {
+  num.folders &lt;- length(foldernames.list)
+  factor.value.list &lt;- rep(0, num.folders)
+  
+  # get the list of factors
+  if (bywhat == &quot;ncpus&quot;) {
+    if (which_software == &quot;mrtrix&quot;) {
+      str_ncpus &lt;- &quot;nthreads&quot;
+      
+      for (i_folder in 1:num.folders) {
+        nthreads &lt;- as.numeric(str_match(foldernames.list[i_folder], &quot;nthreads-\\s*(.*?)\\s*.ftests&quot;)[2])
+        factor.value.list[i_folder] &lt;- nthreads
+      }
+
+    } else if (which_software == &quot;modelarray&quot;) {
+      str_ncpus &lt;- &quot;ncore&quot;
+      
+      # number of cores:
+      for (i_folder in 1:num.folders) {
+        temp &lt;- str_match(foldernames.list[i_folder], &quot;ncore-\\s*(.*?)\\s*.&quot;)[1]
+        num.cores &lt;- as.integer(substr(temp, 7, 20))
+        factor.value.list[i_folder] &lt;- num.cores
+      }
+      
+    } else {
+      stop(&quot;invalid which_software!&quot;)
+    }
+    
+    
+  } else if (bywhat == &quot;nsubj&quot;) {
+    for (i_folder in 1:num.folders) {
+      num.subj &lt;- as.integer(str_match(foldernames.list[i_folder], &quot;nsubj-\\s*(.*?)\\s*.ncore&quot;)[2])
+      factor.value.list[i_folder] &lt;- num.subj
+    }
+    
+  } else {
+    stop(&quot;invalid bywhat!&quot;)
+  }
+  
+
+  # sort factors, get the indices
+  index.factor.value &lt;- order(factor.value.list)  # default: decreasing=FALSE
+  
+  # apply to list of foldernames
+  foldernames.list.new &lt;- foldernames.list[index.factor.value]
+  
+  return(foldernames.list.new)
+  
+}</code></pre>
+<pre class="r"><code># , include=FALSE
+
+# ++++++++++++++++++++++++= confirm if not finished, there will be warning/error when running and printed out!
+
+
+results_modelarray &lt;- function(folder.list, roof.num.child) {
+  myplots &lt;- vector(&#39;list&#39;, length(folder.list))
+  rough.total.time.sec &lt;- rep(0, length(folder.list))
+  
+  for (i_folder in 1:length(folder.list)) {
+    num.subj &lt;- as.integer(str_match(folder.list[i_folder], &quot;nsubj-\\s*(.*?)\\s*.ncore&quot;)[2])
+    
+    # number of cores:
+    temp &lt;- str_match(folder.list[i_folder], &quot;ncore-\\s*(.*?)\\s*.&quot;)[1]
+    num.cores &lt;- as.integer(substr(temp, 7, 20))
+    
+    out &lt;- summaryMemProfiling(folder.list[i_folder], &quot;devtools&quot;, roof.num.child = roof.num.child)
+    df.multi &lt;- out$df.multi
+    rough.total.time.sec[i_folder] &lt;- tail(df.multi[[&quot;Est.s.&quot;]], n=1)  # currently summaryMemProfiling() only supports memory profiling sampled in sec # last time would be the roughly time it took (may not be accurate for ncore&gt;1, as probably not including singleStarts_parent)
+    myplots[[i_folder]] &lt;- out$f
+      
+    when.max &lt;- add_column(out$when.max, ncore = num.cores, .before = 1)
+    when.max &lt;- add_column(when.max, nsubj = num.subj, .before = 1)
+    
+    if (i_folder==1) {
+      summary.when.max &lt;- when.max
+    } else {
+      summary.when.max &lt;- rbind(summary.when.max, when.max)
+    }
+    
+    rownames(summary.when.max)[i_folder] &lt;- toString(i_folder)
+    
+  }
+  
+  
+  ## pivot_long summary.when.max # for ggplot()
+  colnames_parentNchild &lt;- c(&quot;parent&quot;, 
+                           paste(rep(&quot;child&quot;, roof.num.child), as.character(0:(roof.num.child-1)), sep=&quot;&quot;) )   # e.g. c(&quot;parent&quot; &quot;child0&quot; &quot;child1&quot; &quot;child2&quot; &quot;child3&quot;)
+  clean.summary.when.max &lt;- summary.when.max
+  
+  for (i_process in 1:length(colnames_parentNchild)) {   # remove &quot;.RSS.MB.&quot; from parent and child* processes; but not total*
+    names(clean.summary.when.max)[names(clean.summary.when.max) == paste0(colnames_parentNchild[i_process], &quot;.RSS.MB.&quot;)] &lt;- colnames_parentNchild[i_process]
+  
+  }
+  clean.summary.when.max &lt;- clean.summary.when.max %&gt;% 
+    tidyr::pivot_longer(cols = all_of(colnames_parentNchild), names_to=&quot;process&quot;, values_to=&quot;memory_MB&quot;)
+
+  # convert to GB:
+  clean.summary.when.max &lt;- clean.summary.when.max %&gt;% mutate(memory_GB = memory_MB /1024,
+                                                              total_GB = total.RSS.MB. / 1024)
+  
+  clean.summary.when.max$process &lt;- factor(clean.summary.when.max$process, 
+                                                    levels = colnames_parentNchild %&gt;% rev() )
+  
+  
+  
+  ## total memory usage: # this is for adding a label of total value at top of the bar
+  totals &lt;- summary.when.max %&gt;% select(nsubj, ncore, total.RSS.MB.)
+  totals[[&quot;total.RSS.GB.&quot;]] &lt;- totals[[&quot;total.RSS.MB.&quot;]] / 1024
+  
+  
+  
+  toReturn &lt;- list(summary.when.max = summary.when.max,
+                   clean.summary.when.max = clean.summary.when.max,
+                  totals = totals,
+                  rough.total.time.sec = rough.total.time.sec,
+                  myplots = myplots)
+  
+  return(toReturn)
+}
+
+
+
+#&#39; @param folder.list A list of folder names (absolute path)
+results_mrtrix &lt;- function(folder.list) {
+  myplots &lt;- vector(&#39;list&#39;, length(folder.list))
+  rough.total.time.sec &lt;- rep(0, length(folder.list))
+  
+  for (i_folder in 1:length(folder.list)) {
+    nthreads &lt;- as.numeric(str_match(folder.list[i_folder], &quot;nthreads-\\s*(.*?)\\s*.ftests&quot;)[2])
+    nsubj &lt;- as.numeric(str_match(folder.list[i_folder], &quot;nsubj-\\s*(.*?)\\s*.nthreads&quot;)[2])
+    nshuffles &lt;- as.numeric(str_match(folder.list[i_folder], &quot;nshuffles-\\s*(.*?)\\s*.vmware&quot;)[2])
+    
+    df &lt;- readWssSingleParent(folder.list[i_folder])
+    df$RSS.GB. &lt;- df$RSS.MB. / 1024
+    
+    max.RSS.MB. &lt;- max(df$RSS.MB.)
+    df.max.RSS &lt;- data.frame(nsubj = nsubj,
+                             nthreads = nthreads,
+                                max.RSS.MB. = max.RSS.MB.,
+                              max.RSS.GB. = max.RSS.MB./1024)
+    rough.total.time.sec[[i_folder]] &lt;- max(df$Est.s.)
+    
+    
+    if (i_folder==1) {
+      summary.max &lt;- df.max.RSS
+
+    } else {
+      summary.max &lt;- rbind(summary.max, df.max.RSS)
+      
+    }
+    
+  
+    myplots[[i_folder]] &lt;- timeSeriesPlot(df, unit.time = &quot;second&quot;,
+                         str.title = paste0(&quot;MRtrix fixelcfestats: nsubj=&quot;, toString(nsubj),&quot;, nthreads=&quot;, toString(nthreads), &quot;, nshuffles=&quot;, toString(nshuffles)) )
+    
+  }
+  
+  toReturn &lt;- list(summary.max = summary.max,
+                     myplots = myplots,
+                   rough.total.time.sec = rough.total.time.sec)
+  return(toReturn)
+}</code></pre>
 <pre class="r"><code>plotGen_modelarray_diffncores &lt;- function(clean.summary.when.max_modelarray, 
                                     totals_modelarray,
                                     nsubj, roof.num.child, flag_legend_order_reverse,
@@ -509,50 +994,50 @@ ylim_modelarray &lt;- c(0, 3.1)
 ylim_compare &lt;- c(0,52)
 
 foldernames.list.modelarray &lt;- t_modelarray[[str_repeat_modelarray]][t_modelarray$nsubj == nsubj]
-foldernames.list.modelarray &lt;- sort(foldernames.list.modelarray) %&gt;% gtools::mixedsort(decreasing = TRUE)
+foldernames.list.modelarray &lt;- sort_foldernames(foldernames.list.modelarray, &quot;modelarray&quot;, &quot;ncpus&quot;)
 folders.list.modelarray &lt;- file.path(main.folder.modelarray,  foldernames.list.modelarray)
 foldernames.list.modelarray</code></pre>
-<pre><code>## [1] &quot;MAsha-0911c4f.MAPsha-94ed85f.lm.josiane.nfixel-0.nsubj-30.ncore-2.vmware.runMemProfiler.s-1sec.20220112-162102&quot;
-## [2] &quot;MAsha-0911c4f.MAPsha-94ed85f.lm.josiane.nfixel-0.nsubj-30.ncore-4.vmware.runMemProfiler.s-1sec.20220114-222027&quot;
-## [3] &quot;MAsha-0911c4f.MAPsha-76162fd.lm.josiane.nfixel-0.nsubj-30.ncore-1.vmware.runMemProfiler.s-1sec.20220117-193258&quot;
-## [4] &quot;MAsha-0911c4f.MAPsha-76162fd.lm.josiane.nfixel-0.nsubj-30.ncore-3.vmware.runMemProfiler.s-1sec.20220118-020534&quot;</code></pre>
+<pre><code>## [1] &quot;MAsha-0911c4f.MAPsha-76162fd.lm.josiane.nfixel-0.nsubj-30.ncore-1.vmware.runMemProfiler.s-1sec.20220117-193258&quot;
+## [2] &quot;MAsha-0911c4f.MAPsha-94ed85f.lm.josiane.nfixel-0.nsubj-30.ncore-2.vmware.runMemProfiler.s-1sec.20220112-162102&quot;
+## [3] &quot;MAsha-0911c4f.MAPsha-76162fd.lm.josiane.nfixel-0.nsubj-30.ncore-3.vmware.runMemProfiler.s-1sec.20220118-020534&quot;
+## [4] &quot;MAsha-0911c4f.MAPsha-94ed85f.lm.josiane.nfixel-0.nsubj-30.ncore-4.vmware.runMemProfiler.s-1sec.20220114-222027&quot;</code></pre>
 <pre class="r"><code>out_modelarray &lt;- results_modelarray(folders.list.modelarray, roof.num.child = roof.num.child)
 totals_modelarray &lt;- out_modelarray$totals
 summary.when.max_modelarray &lt;- out_modelarray$summary.when.max
 clean.summary.when.max_modelarray &lt;- out_modelarray$clean.summary.when.max
 totals_modelarray</code></pre>
 <pre><code>##   nsubj ncore total.RSS.MB. total.RSS.GB.
-## 1    30     2      1665.851     1.6268079
-## 2    30     4      2770.552     2.7056168
-## 3    30     1       791.960     0.7733984
-## 4    30     3      2200.235     2.1486674</code></pre>
+## 1    30     1       791.960     0.7733984
+## 2    30     2      1665.851     1.6268079
+## 3    30     3      2200.235     2.1486674
+## 4    30     4      2770.552     2.7056168</code></pre>
 <pre class="r"><code>summary.when.max_modelarray</code></pre>
-<pre><code>##   nsubj ncore Est.s. parent.RSS.MB. child0.RSS.MB. child1.RSS.MB.
-## 1    30     2  12384       425.9000        613.652       626.2992
-## 2    30     4   9090       454.6985        577.340       577.4600
-## 3    30     1  23232       791.9600          0.000         0.0000
-## 4    30     3  10183       434.9878        583.820       597.7849
-##   total.child.RSS.MB. total.RSS.MB. child2.RSS.MB. child3.RSS.MB.
-## 1            1239.951      1665.851         0.0000         0.0000
-## 2            2315.853      2770.552       577.4400       583.6131
-## 3               0.000       791.960         0.0000         0.0000
-## 4            1765.248      2200.235       583.6427         0.0000</code></pre>
+<pre><code>##   nsubj ncore Est.s. parent.RSS.MB. total.RSS.MB. child0.RSS.MB. child1.RSS.MB.
+## 1    30     1  23232       791.9600       791.960          0.000         0.0000
+## 2    30     2  12384       425.9000      1665.851        613.652       626.2992
+## 3    30     3  10183       434.9878      2200.235        583.820       597.7849
+## 4    30     4   9090       454.6985      2770.552        577.340       577.4600
+##   child2.RSS.MB. child3.RSS.MB. total.child.RSS.MB.
+## 1         0.0000         0.0000               0.000
+## 2         0.0000         0.0000            1239.951
+## 3       583.6427         0.0000            1765.248
+## 4       577.4400       583.6131            2315.853</code></pre>
 <pre class="r"><code>foldernames.list.mrtrix &lt;- t_mrtrix[[str_repeat_mrtrix]][t_mrtrix$nsubj == nsubj]
-foldernames.list.mrtrix &lt;- sort(foldernames.list.mrtrix) %&gt;% gtools::mixedsort(decreasing = TRUE)
+foldernames.list.mrtrix &lt;- sort_foldernames(foldernames.list.mrtrix, &quot;mrtrix&quot;,&quot;ncpus&quot;)
 folders.list.mrtrix &lt;- file.path(main.folder.mrtrix,  foldernames.list.mrtrix)
 foldernames.list.mrtrix</code></pre>
-<pre><code>## [1] &quot;nsubj-30.nthreads-3.ftests.nshuffles-100.vmware.runMemProfiler.s-1sec.20220111-223608&quot;               
-## [2] &quot;nsubj-30.nthreads-4.ftests.nshuffles-100.vmware.runMemProfiler.s-1sec.20220106-154947&quot;               
-## [3] &quot;MAPsha-c1deb7d.nsubj-30.nthreads-1.ftests.nshuffles-100.vmware.runMemProfiler.s-1sec.20220121-230208&quot;
-## [4] &quot;MAPsha-c1deb7d.nsubj-30.nthreads-2.ftests.nshuffles-100.vmware.runMemProfiler.s-1sec.20220122-002121&quot;</code></pre>
+<pre><code>## [1] &quot;MAPsha-c1deb7d.nsubj-30.nthreads-1.ftests.nshuffles-100.vmware.runMemProfiler.s-1sec.20220121-230208&quot;
+## [2] &quot;MAPsha-c1deb7d.nsubj-30.nthreads-2.ftests.nshuffles-100.vmware.runMemProfiler.s-1sec.20220122-002121&quot;
+## [3] &quot;nsubj-30.nthreads-3.ftests.nshuffles-100.vmware.runMemProfiler.s-1sec.20220111-223608&quot;               
+## [4] &quot;nsubj-30.nthreads-4.ftests.nshuffles-100.vmware.runMemProfiler.s-1sec.20220106-154947&quot;</code></pre>
 <pre class="r"><code>theresults &lt;- results_mrtrix(folders.list.mrtrix)
 totals_mrtrix &lt;- theresults$summary.max
 totals_mrtrix</code></pre>
 <pre><code>##   nsubj nthreads max.RSS.MB. max.RSS.GB.
-## 1    30        3     9129.87    8.915889
-## 2    30        4     9350.56    9.131406
-## 3    30        1     8568.38    8.367559
-## 4    30        2     8750.86    8.545762</code></pre>
+## 1    30        1     8568.38    8.367559
+## 2    30        2     8750.86    8.545762
+## 3    30        3     9129.87    8.915889
+## 4    30        4     9350.56    9.131406</code></pre>
 <pre class="r"><code>#theresults$myplots[[4]]
 
 
@@ -582,12 +1067,12 @@ roof.num.child = 4
 flag_legend_order_reverse = FALSE   # TRUE for legend at bottom in final figure; FALSE for legend at side
 
 foldernames.list.modelarray &lt;- t_modelarray[[str_repeat_modelarray]][t_modelarray$nsubj == nsubj]
-foldernames.list.modelarray &lt;- sort(foldernames.list.modelarray) %&gt;% gtools::mixedsort(decreasing = TRUE)
+foldernames.list.modelarray &lt;- sort_foldernames(foldernames.list.modelarray, &quot;modelarray&quot;, &quot;ncpus&quot;)
 folders.list.modelarray &lt;- file.path(main.folder.modelarray,  foldernames.list.modelarray)
 foldernames.list.modelarray</code></pre>
 <pre><code>## [1] &quot;MAsha-0911c4f.MAPsha-94ed85f.lm.josiane.nfixel-0.nsubj-938.ncore-1.vmware.runMemProfiler.s-1sec.20220113-063127&quot;
-## [2] &quot;MAsha-0911c4f.MAPsha-94ed85f.lm.josiane.nfixel-0.nsubj-938.ncore-3.vmware.runMemProfiler.s-1sec.20220113-180004&quot;
-## [3] &quot;MAsha-0911c4f.MAPsha-76162fd.lm.josiane.nfixel-0.nsubj-938.ncore-2.vmware.runMemProfiler.s-1sec.20220118-120938&quot;
+## [2] &quot;MAsha-0911c4f.MAPsha-76162fd.lm.josiane.nfixel-0.nsubj-938.ncore-2.vmware.runMemProfiler.s-1sec.20220118-120938&quot;
+## [3] &quot;MAsha-0911c4f.MAPsha-94ed85f.lm.josiane.nfixel-0.nsubj-938.ncore-3.vmware.runMemProfiler.s-1sec.20220113-180004&quot;
 ## [4] &quot;MAsha-0911c4f.MAPsha-76162fd.lm.josiane.nfixel-0.nsubj-938.ncore-4.vmware.runMemProfiler.s-1sec.20220119-061004&quot;</code></pre>
 <pre class="r"><code>out_modelarray &lt;- results_modelarray(folders.list.modelarray, roof.num.child = roof.num.child)
 totals_modelarray &lt;- out_modelarray$totals
@@ -596,22 +1081,22 @@ clean.summary.when.max_modelarray &lt;- out_modelarray$clean.summary.when.max
 totals_modelarray</code></pre>
 <pre><code>##   nsubj ncore total.RSS.MB. total.RSS.GB.
 ## 1   938     1       838.950     0.8192871
-## 2   938     3      2300.906     2.2469783
-## 3   938     2      1733.538     1.6929085
+## 2   938     2      1733.538     1.6929085
+## 3   938     3      2300.906     2.2469783
 ## 4   938     4      2844.066     2.7774077</code></pre>
 <pre class="r"><code>summary.when.max_modelarray</code></pre>
 <pre><code>##   nsubj ncore Est.s. parent.RSS.MB. total.RSS.MB. child0.RSS.MB. child1.RSS.MB.
 ## 1   938     1  24269       838.9500       838.950         0.0000         0.0000
-## 2   938     3   8953       449.8746      2300.906       611.6800       611.5700
-## 3   938     2  13324       437.9800      1733.538       632.0300       663.5283
+## 2   938     2  13324       437.9800      1733.538       632.0300       663.5283
+## 3   938     3   8953       449.8746      2300.906       611.6800       611.5700
 ## 4   938     4   9319       435.9883      2844.066       601.6006       603.2466
 ##   child2.RSS.MB. child3.RSS.MB. total.child.RSS.MB.
 ## 1         0.0000           0.00               0.000
-## 2       627.7811           0.00            1851.031
-## 3         0.0000           0.00            1295.558
+## 2         0.0000           0.00            1295.558
+## 3       627.7811           0.00            1851.031
 ## 4       601.4100         601.82            2408.077</code></pre>
 <pre class="r"><code>foldernames.list.mrtrix &lt;- t_mrtrix[[str_repeat_mrtrix]][t_mrtrix$nsubj == nsubj]
-foldernames.list.mrtrix &lt;- sort(foldernames.list.mrtrix) %&gt;% gtools::mixedsort(decreasing = TRUE)
+foldernames.list.mrtrix &lt;- sort_foldernames(foldernames.list.mrtrix, &quot;mrtrix&quot;, &quot;ncpus&quot;)
 folders.list.mrtrix &lt;- file.path(main.folder.mrtrix,  foldernames.list.mrtrix)
 foldernames.list.mrtrix</code></pre>
 <pre><code>## [1] &quot;nsubj-938.nthreads-1.ftests.nshuffles-100.vmware.runMemProfiler.s-1sec.20220106-221321&quot;               
@@ -673,7 +1158,7 @@ flag_legend_order_reverse &lt;- FALSE    # when legend is at the bottom, use &qu
 ylim_modelarray &lt;- c(0, 3.1)
 
 foldernames.list.modelarray &lt;- t_modelarray[[str_repeat_modelarray]][t_modelarray$ncore == ncpus]
-foldernames.list.modelarray &lt;- sort(foldernames.list.modelarray) %&gt;% gtools::mixedsort(decreasing = TRUE)
+foldernames.list.modelarray &lt;- sort_foldernames(foldernames.list.modelarray, &quot;modelarray&quot;, &quot;nsubj&quot;)
 folders.list.modelarray &lt;- file.path(main.folder.modelarray,  foldernames.list.modelarray)
 foldernames.list.modelarray</code></pre>
 <pre><code>## [1] &quot;MAsha-0911c4f.MAPsha-94ed85f.lm.josiane.nfixel-0.nsubj-30.ncore-4.vmware.runMemProfiler.s-1sec.20220114-222027&quot; 
@@ -710,12 +1195,12 @@ totals_modelarray</code></pre>
 ## 5       592.1693       591.7600            2368.399      2805.549
 ## 6       601.4100       601.8200            2408.077      2844.066</code></pre>
 <pre class="r"><code>foldernames.list.mrtrix &lt;- t_mrtrix[[str_repeat_mrtrix]][t_mrtrix$nthreads == ncpus]
-foldernames.list.mrtrix &lt;- sort(foldernames.list.mrtrix) %&gt;% gtools::mixedsort(decreasing = TRUE)
+foldernames.list.mrtrix &lt;- sort_foldernames(foldernames.list.mrtrix, &quot;mrtrix&quot;, &quot;nsubj&quot;)
 folders.list.mrtrix &lt;- file.path(main.folder.mrtrix,  foldernames.list.mrtrix)
 foldernames.list.mrtrix</code></pre>
 <pre><code>## [1] &quot;nsubj-30.nthreads-4.ftests.nshuffles-100.vmware.runMemProfiler.s-1sec.20220106-154947&quot;                
-## [2] &quot;nsubj-300.nthreads-4.ftests.nshuffles-100.vmware.runMemProfiler.s-1sec.20220106-170447&quot;               
-## [3] &quot;MAPsha-c1deb7d.nsubj-100.nthreads-4.ftests.nshuffles-100.vmware.runMemProfiler.s-1sec.20220122-165701&quot;
+## [2] &quot;MAPsha-c1deb7d.nsubj-100.nthreads-4.ftests.nshuffles-100.vmware.runMemProfiler.s-1sec.20220122-165701&quot;
+## [3] &quot;nsubj-300.nthreads-4.ftests.nshuffles-100.vmware.runMemProfiler.s-1sec.20220106-170447&quot;               
 ## [4] &quot;MAPsha-622c361.nsubj-500.nthreads-4.ftests.nshuffles-100.vmware.runMemProfiler.s-1sec.20220119-145510&quot;
 ## [5] &quot;MAPsha-622c361.nsubj-750.nthreads-4.ftests.nshuffles-100.vmware.runMemProfiler.s-1sec.20220121-125236&quot;
 ## [6] &quot;MAPsha-622c361.nsubj-938.nthreads-4.ftests.nshuffles-100.vmware.runMemProfiler.s-1sec.20220120-151830&quot;</code></pre>
@@ -724,8 +1209,8 @@ totals_mrtrix &lt;- out_mrtrix$summary.max
 totals_mrtrix</code></pre>
 <pre><code>##   nsubj nthreads max.RSS.MB. max.RSS.GB.
 ## 1    30        4     9350.56    9.131406
-## 2   300        4    21435.03   20.932646
-## 3   100        4    12455.20   12.163281
+## 2   100        4    12455.20   12.163281
+## 3   300        4    21435.03   20.932646
 ## 4   500        4    30333.31   29.622373
 ## 5   750        4    41537.51   40.563975
 ## 6   938        4    48936.85   47.789893</code></pre>

@@ -218,6 +218,61 @@ get_maxMemory_N_medianRepeat <- function(t, which_software, nrepeat_total,
   ## return t
   
 }
+
+#' sort the foldernames by a specific factor 
+#' @param foldernames.list a list of foldernames to sort
+#' @param which_software "modelarray" or "mrtrix"
+#' @param bywhat sort by what factor, "ncpus" or "nsubj"
+sort_foldernames <- function(foldernames.list, which_software, bywhat) {
+  num.folders <- length(foldernames.list)
+  factor.value.list <- rep(0, num.folders)
+  
+  # get the list of factors
+  if (bywhat == "ncpus") {
+    if (which_software == "mrtrix") {
+      str_ncpus <- "nthreads"
+      
+      for (i_folder in 1:num.folders) {
+        nthreads <- as.numeric(str_match(foldernames.list[i_folder], "nthreads-\\s*(.*?)\\s*.ftests")[2])
+        factor.value.list[i_folder] <- nthreads
+      }
+
+    } else if (which_software == "modelarray") {
+      str_ncpus <- "ncore"
+      
+      # number of cores:
+      for (i_folder in 1:num.folders) {
+        temp <- str_match(foldernames.list[i_folder], "ncore-\\s*(.*?)\\s*.")[1]
+        num.cores <- as.integer(substr(temp, 7, 20))
+        factor.value.list[i_folder] <- num.cores
+      }
+      
+    } else {
+      stop("invalid which_software!")
+    }
+    
+    
+  } else if (bywhat == "nsubj") {
+    for (i_folder in 1:num.folders) {
+      num.subj <- as.integer(str_match(foldernames.list[i_folder], "nsubj-\\s*(.*?)\\s*.ncore")[2])
+      factor.value.list[i_folder] <- num.subj
+    }
+    
+  } else {
+    stop("invalid bywhat!")
+  }
+  
+
+  # sort factors, get the indices
+  index.factor.value <- order(factor.value.list)  # default: decreasing=FALSE
+  
+  # apply to list of foldernames
+  foldernames.list.new <- foldernames.list[index.factor.value]
+  
+  return(foldernames.list.new)
+  
+}
+
 ```
 
 ```{r functions for getting results}
@@ -679,7 +734,7 @@ ylim_modelarray <- c(0, 3.1)
 ylim_compare <- c(0,52)
 
 foldernames.list.modelarray <- t_modelarray[[str_repeat_modelarray]][t_modelarray$nsubj == nsubj]
-foldernames.list.modelarray <- sort(foldernames.list.modelarray) %>% gtools::mixedsort(decreasing = TRUE)
+foldernames.list.modelarray <- sort_foldernames(foldernames.list.modelarray, "modelarray", "ncpus")
 folders.list.modelarray <- file.path(main.folder.modelarray,  foldernames.list.modelarray)
 foldernames.list.modelarray
   
@@ -692,7 +747,7 @@ summary.when.max_modelarray
 
 
 foldernames.list.mrtrix <- t_mrtrix[[str_repeat_mrtrix]][t_mrtrix$nsubj == nsubj]
-foldernames.list.mrtrix <- sort(foldernames.list.mrtrix) %>% gtools::mixedsort(decreasing = TRUE)
+foldernames.list.mrtrix <- sort_foldernames(foldernames.list.mrtrix, "mrtrix","ncpus")
 folders.list.mrtrix <- file.path(main.folder.mrtrix,  foldernames.list.mrtrix)
 foldernames.list.mrtrix
 
@@ -730,7 +785,7 @@ roof.num.child = 4
 flag_legend_order_reverse = FALSE   # TRUE for legend at bottom in final figure; FALSE for legend at side
 
 foldernames.list.modelarray <- t_modelarray[[str_repeat_modelarray]][t_modelarray$nsubj == nsubj]
-foldernames.list.modelarray <- sort(foldernames.list.modelarray) %>% gtools::mixedsort(decreasing = TRUE)
+foldernames.list.modelarray <- sort_foldernames(foldernames.list.modelarray, "modelarray", "ncpus")
 folders.list.modelarray <- file.path(main.folder.modelarray,  foldernames.list.modelarray)
 foldernames.list.modelarray
   
@@ -743,7 +798,7 @@ summary.when.max_modelarray
 
 
 foldernames.list.mrtrix <- t_mrtrix[[str_repeat_mrtrix]][t_mrtrix$nsubj == nsubj]
-foldernames.list.mrtrix <- sort(foldernames.list.mrtrix) %>% gtools::mixedsort(decreasing = TRUE)
+foldernames.list.mrtrix <- sort_foldernames(foldernames.list.mrtrix, "mrtrix", "ncpus")
 folders.list.mrtrix <- file.path(main.folder.mrtrix,  foldernames.list.mrtrix)
 foldernames.list.mrtrix
 
@@ -802,7 +857,7 @@ flag_legend_order_reverse <- FALSE    # when legend is at the bottom, use "TRUE"
 ylim_modelarray <- c(0, 3.1)
 
 foldernames.list.modelarray <- t_modelarray[[str_repeat_modelarray]][t_modelarray$ncore == ncpus]
-foldernames.list.modelarray <- sort(foldernames.list.modelarray) %>% gtools::mixedsort(decreasing = TRUE)
+foldernames.list.modelarray <- sort_foldernames(foldernames.list.modelarray, "modelarray", "nsubj")
 folders.list.modelarray <- file.path(main.folder.modelarray,  foldernames.list.modelarray)
 foldernames.list.modelarray
   
@@ -814,7 +869,7 @@ totals_modelarray
 summary.when.max_modelarray
 
 foldernames.list.mrtrix <- t_mrtrix[[str_repeat_mrtrix]][t_mrtrix$nthreads == ncpus]
-foldernames.list.mrtrix <- sort(foldernames.list.mrtrix) %>% gtools::mixedsort(decreasing = TRUE)
+foldernames.list.mrtrix <- sort_foldernames(foldernames.list.mrtrix, "mrtrix", "nsubj")
 folders.list.mrtrix <- file.path(main.folder.mrtrix,  foldernames.list.mrtrix)
 foldernames.list.mrtrix
 
