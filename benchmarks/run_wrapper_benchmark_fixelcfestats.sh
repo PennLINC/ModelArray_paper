@@ -19,29 +19,29 @@ function wait_r_end {
 #bash wrapper_benchmark_ModelArray.lm.sh -s 1 -D test_n50 -f 1000 -S 50 -c 4 -w vmware -M TRUE
 
 
-# wait_r_end 10   # in seconds
-# bash myDropCaches.sh
-# cmd="bash wrapper_benchmark_fixelcfestats.sh -S 30 -h 100 -t 4 -f TRUE -F FALSE -n FALSE -w vmware -M TRUE -s 1"
-# echo $cmd
-# $cmd
+wait_r_end 600   # in seconds
+bash myDropCaches.sh
+cmd="bash wrapper_benchmark_fixelcfestats.sh -S 30 -h 100 -t 4 -f TRUE -F FALSE -n FALSE -w vmware -M TRUE -s 1"
+echo $cmd
+$cmd
 
-# wait_r_end 300   # in seconds
-# bash myDropCaches.sh
-# cmd="bash wrapper_benchmark_fixelcfestats.sh -S 100 -h 100 -t 4 -f TRUE -F FALSE -n FALSE -w vmware -M TRUE -s 1"
-# echo $cmd
-# $cmd
+wait_r_end 300   # in seconds
+bash myDropCaches.sh
+cmd="bash wrapper_benchmark_fixelcfestats.sh -S 100 -h 100 -t 4 -f TRUE -F FALSE -n FALSE -w vmware -M TRUE -s 1"
+echo $cmd
+$cmd
 
-# wait_r_end 300   # in seconds
-# bash myDropCaches.sh
-# cmd="bash wrapper_benchmark_fixelcfestats.sh -S 300 -h 100 -t 4 -f TRUE -F FALSE -n FALSE -w vmware -M TRUE -s 1"
-# echo $cmd
-# $cmd
+wait_r_end 300   # in seconds
+bash myDropCaches.sh
+cmd="bash wrapper_benchmark_fixelcfestats.sh -S 300 -h 100 -t 4 -f TRUE -F FALSE -n FALSE -w vmware -M TRUE -s 1"
+echo $cmd
+$cmd
 
-# wait_r_end 300   # in seconds
-# bash myDropCaches.sh
-# cmd="bash wrapper_benchmark_fixelcfestats.sh -S 500 -h 100 -t 4 -f TRUE -F FALSE -n FALSE -w vmware -M TRUE -s 1"
-# echo $cmd
-# $cmd
+wait_r_end 300   # in seconds
+bash myDropCaches.sh
+cmd="bash wrapper_benchmark_fixelcfestats.sh -S 500 -h 100 -t 4 -f TRUE -F FALSE -n FALSE -w vmware -M TRUE -s 1"
+echo $cmd
+$cmd
 
 # wait_r_end 300   # in seconds
 # bash myDropCaches.sh
@@ -55,41 +55,41 @@ function wait_r_end {
 # echo $cmd
 # $cmd
 
-wait_r_end 300   # in seconds
-bash myDropCaches.sh
-cmd="bash wrapper_benchmark_fixelcfestats.sh -S 30 -h 100 -t 1 -f TRUE -F FALSE -n FALSE -w vmware -M TRUE -s 1"
-echo $cmd
-$cmd
-
-wait_r_end 300   # in seconds
-bash myDropCaches.sh
-cmd="bash wrapper_benchmark_fixelcfestats.sh -S 30 -h 100 -t 2 -f TRUE -F FALSE -n FALSE -w vmware -M TRUE -s 1"
-echo $cmd
-$cmd
-
-wait_r_end 300   # in seconds
-bash myDropCaches.sh
-cmd="bash wrapper_benchmark_fixelcfestats.sh -S 30 -h 100 -t 3 -f TRUE -F FALSE -n FALSE -w vmware -M TRUE -s 1"
-echo $cmd
-$cmd
-
-wait_r_end 300   # in seconds
-bash myDropCaches.sh
-cmd="bash wrapper_benchmark_fixelcfestats.sh -S 938 -h 100 -t 1 -f TRUE -F FALSE -n FALSE -w vmware -M TRUE -s 1"
-echo $cmd
-$cmd
+# wait_r_end 300   # in seconds
+# bash myDropCaches.sh
+# cmd="bash wrapper_benchmark_fixelcfestats.sh -S 30 -h 100 -t 1 -f TRUE -F FALSE -n FALSE -w vmware -M TRUE -s 1"
+# echo $cmd
+# $cmd
 
 # wait_r_end 300   # in seconds
 # bash myDropCaches.sh
-# cmd="bash wrapper_benchmark_fixelcfestats.sh -S 938 -h 100 -t 2 -f TRUE -F FALSE -n FALSE -w vmware -M TRUE -s 1"
+# cmd="bash wrapper_benchmark_fixelcfestats.sh -S 30 -h 100 -t 2 -f TRUE -F FALSE -n FALSE -w vmware -M TRUE -s 1"
 # echo $cmd
-# $cmd 
+# $cmd
 
 # wait_r_end 300   # in seconds
 # bash myDropCaches.sh
-# cmd="bash wrapper_benchmark_fixelcfestats.sh -S 938 -h 100 -t 3 -f TRUE -F FALSE -n FALSE -w vmware -M TRUE -s 1"
+# cmd="bash wrapper_benchmark_fixelcfestats.sh -S 30 -h 100 -t 3 -f TRUE -F FALSE -n FALSE -w vmware -M TRUE -s 1"
 # echo $cmd
-# $cmd 
+# $cmd
+
+# wait_r_end 300   # in seconds
+# bash myDropCaches.sh
+# cmd="bash wrapper_benchmark_fixelcfestats.sh -S 938 -h 100 -t 1 -f TRUE -F FALSE -n FALSE -w vmware -M TRUE -s 1"
+# echo $cmd
+# $cmd
+
+wait_r_end 300   # in seconds
+bash myDropCaches.sh
+cmd="bash wrapper_benchmark_fixelcfestats.sh -S 938 -h 100 -t 2 -f TRUE -F FALSE -n FALSE -w vmware -M TRUE -s 1"
+echo $cmd
+$cmd 
+
+wait_r_end 300   # in seconds
+bash myDropCaches.sh
+cmd="bash wrapper_benchmark_fixelcfestats.sh -S 938 -h 100 -t 3 -f TRUE -F FALSE -n FALSE -w vmware -M TRUE -s 1"
+echo $cmd
+$cmd 
 
 
 wait_r_end 1
