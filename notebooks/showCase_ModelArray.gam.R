@@ -42,8 +42,8 @@ if (flag_library_what == "automatically") {
   message(paste0("commitSHA: ", commitSHA))
 
   devtools::install_github(paste0("PennLINC/ModelArray@", commitSHA),   # install_github("username/repository@commitSHA")
-                           upgrade = "never")   # not to upgrade package dependencies
-                           # TODO: consider adding force=TRUE ++++++
+                           upgrade = "never",   # not to upgrade package dependencies
+                           force=TRUE)   # force re-install ModelArray again
   library(ModelArray)
     
 } else if (flag_library_what == "manually") {
@@ -161,7 +161,7 @@ tic("Running ModelArray.gam()")
 # +++++++++++++++ optional: NEXT TIME: sex --> ordered factor, and use oSex in formula! (this may make the plots - e.g. Bart's function more making sense? as there will be a reference level of female or male)++++++++++++++++++++++++++
 gam_real <- ModelArray.gam(formula = formula, data = fixelarray, phenotypes = phenotypes, scalar = scalar, 
                            element.subset = element.subset, full.outputs = TRUE,
-                           eff.size.term.index = c(1),
+                           changed.rsq.term.index = c(1),
                            correct.p.value.smoothTerms = c("fdr", "bonferroni"),
                            correct.p.value.parametricTerms = c("fdr", "bonferroni"),
                            n_cores=num.cores, pbar = TRUE,

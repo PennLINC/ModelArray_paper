@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ../benchmarks/config.txt  # flag_where and commitSHA
+source config.txt  # THIS IS CONFIG FOR NOTEBOOKS ONLY! DIFFERENT FROM BENCHMARKS'S | flag_where and ModelArray_commitSHA
 
 dataset_name="josiane"
 num_fixels=0
@@ -12,7 +12,7 @@ echo "date variable: ${date}"
 
 
 echo "flag_where: ${flag_where}"
-echo "commitSHA: ${commitSHA}"
+echo "ModelArray_commitSHA: ${ModelArray_commitSHA}"
 echo "dataset name: $dataset_name"
 echo "num_fixels: $num_fixels"
 echo "num_subj: $num_subj"
@@ -26,6 +26,6 @@ fi
 
 fn_R_output="${folder_output_main}/${filename_output}.txt"
 
-cmd="Rscript ./showCase_ModelArray.gam.R $dataset_name $num_fixels $num_subj $num_cores $filename_output $commitSHA > ${fn_R_output} 2>&1 &"
+cmd="Rscript ./showCase_ModelArray.gam.R $dataset_name $num_fixels $num_subj $num_cores $filename_output $ModelArray_commitSHA > ${fn_R_output} 2>&1 &"
 echo $cmd
-Rscript ./showCase_ModelArray.gam.R $dataset_name $num_fixels $num_subj $num_cores $filename_output $commitSHA > ${fn_R_output} 2>&1 &
+Rscript ./showCase_ModelArray.gam.R $dataset_name $num_fixels $num_subj $num_cores $filename_output $ModelArray_commitSHA > ${fn_R_output} 2>&1 &
