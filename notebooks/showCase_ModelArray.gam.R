@@ -28,6 +28,14 @@ commitSHA <- as.character(args[6])   # github commit SHA for installing ModelArr
 
 flag_library_what <- "automatically"   # "automatically" or "manually"
 
+# checkers:
+message(paste0("which dataset: ", flag_whichdataset))
+message(paste0("number of fixels = ", toString(num.fixels)))
+message(paste0("number of subjects = ", toString(num.subj)))
+message(paste0("number of cores = ", toString(num.cores)))
+message(paste0("output filename: ", filename_output_body))
+message(paste0("ModelArray commitSHA = ", commitSHA))
+
 ## print ModelArray_paper's commitSHA:
 cmd <- "git rev-parse HEAD"
 message("ModelArray_paper commit SHA ($ git rev-parse HEAD): ")
