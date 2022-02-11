@@ -34,10 +34,11 @@ library("testthat")
 library("gratia")
 library("ggplot2")
 library("devtools")
+library("patchwork")
 
 # install ModelArray package:
 
-ModelArray_commitSHA = "0911c4ffbcc737ea9a615f7a663f57bb0b4e174d" # +++++++++++++++
+ModelArray_commitSHA = "9e735b93f2d6b756f8ef18aadc14e2d10c6cc191" # +++++++++++++++
 
 devtools::install_github(paste0("PennLINC/ModelArray@", ModelArray_commitSHA),   # install_github("username/repository@commitSHA")
                          upgrade = "never",  # not to upgrade package dependencies
@@ -148,6 +149,7 @@ filename.fixelIdListMask <- "ROI_x69_sage_p_lt_1e-15_fixelIdList.txt"  # for ste
 stat_toPlot <- "s_Age.eff.size"
 formula <- FDC ~ s(Age, k=4, fx=TRUE) + sex + dti64MeanRelRMS
 method.gam.refit <- "REML"   # +++++++++++++++
+main.folder.figures <- "/home/chenying/Desktop/fixel_project/ModelArray_paper/figures"
 
 ### load data #####
 folder.h5.results <- gsub(".h5", "", fn.h5.results, fixed=TRUE)
@@ -295,9 +297,8 @@ plot_oneFixel <- function(modelarray, fixel_id, scalar_name,
 results <- plot_oneFixel(modelarray=NULL, NULL, scalar_name, 
                          formula = formula, method.gam.refit = method.gam.refit, 
                          phenotypes = phenotypes, dat=df_avgFixel, return_else = TRUE)
-f_avgFixel <- results$f
+f_avgFixel_orig <- results$f
 onemodel_avgFixel <- results$onemodel
-#f_avgFixel
 
 onemodel_avgFixel.summary <- summary(onemodel_avgFixel)
 onemodel_avgFixel.smoothTerm <- broom::tidy(onemodel_avgFixel, parametric=FALSE)
@@ -322,28 +323,61 @@ onemodel_avgFixel.summary
 print(paste0("s(Age)'s p.value of re-fit after avg in this cluster = ", toString(s_Age.p.value_avgFixel)))  # if =0, it means <1e-16
 print(paste0("s(Age)'s effect size of re-fit after avg in this cluster = ", sprintf("%.3f",eff.size.avgFixel)))  
 
-### get the partial R2:
-temp <- partialRsq(onemodel_avgFixel, redmodel_avgFixel)
-partial.rsq.avgFixel <- temp$partialRsq
-print(paste0("s(Age)'s partial R2 of re-fit after avg in this cluster = ", sprintf("%.3f",partial.rsq.avgFixel)))  
+# ### get the partial R2:
+# temp <- partialRsq(onemodel_avgFixel, redmodel_avgFixel)
+# partial.rsq.avgFixel <- temp$partialRsq
+# print(paste0("s(Age)'s partial R2 of re-fit after avg in this cluster = ", sprintf("%.3f",partial.rsq.avgFixel)))  
 
 # and add to the plot!
 # x = 12; y = 1.65
-# x = 20; y = 0.55  # p.value + delta adj Rsq
-x = 20; y = 0.6  # p.value + delta adj Rsq + partial Rsq
+x = 18; y = 0.55; fontsize_text <- 5; fontsize_theme <- 9  # p.value + delta adj Rsq
+#x = 20; y = 0.6  # p.value + delta adj Rsq + partial Rsq
 if (s_Age.p.value_avgFixel < 0.001) {
   txt.s_Age.p.value_avgFixel = "s(Age)'s p.value < 0.001"
 } else {
   txt.s_Age.p.value_avgFixel = paste0("s(Age)'s p.value = ", sprintf("%.3f",s_Age.p.value_avgFixel))
 }
 
- 
-f_avgFixel + geom_text(x=x, y=y, size = 6,
-                       label=paste0(txt.s_Age.p.value_avgFixel, "\n",
-                                    "s(Age)'s delta adj Rsq = ", sprintf("%.3f",eff.size.avgFixel),"\n",
-                                    "s(Age)'s partial Rsq = ", sprintf("%.3f",partial.rsq.avgFixel)))
+label_text <-  paste0(txt.s_Age.p.value_avgFixel, "\n",
+                      "s(Age)'s delta adj Rsq = ", sprintf("%.3f",eff.size.avgFixel) )      #  ,"\n",
+  #"s(Age)'s partial Rsq = ", sprintf("%.3f",partial.rsq.avgFixel))) 
 
+f_avgFixel <- f_avgFixel_orig + 
+  # geom_text(x=x, y=y, size = fontsize_text, family = "Arial", label=label_text) + 
+                  theme_classic() +
+                  theme(text = element_text(size = fontsize_theme, family="Arial")) +
+                  xlab("Age (years)")
+                              
+
+p_avgFixel <- f_avgFixel + plot_layout(heights = unit(c(70), c('mm')), widths = unit(c(70), c('mm'))) 
+p_avgFixel
+
+### save the figure:
+final_width <- 90
+final_height <- 85
+
+list_ext_figure <- c("jpeg", "svg")
+for (ext_figure in list_ext_figure) {
+  ggsave(file.path(main.folder.figures,
+                   paste0("figure_gam_showcase_panelB.", ext_figure) ),
+         plot = p_avgFixel, device = ext_figure, dpi = 300, width = final_width, height = final_height, units = "mm")   # 
+}
+
+### save the figure - for graphic abstract:
+f_avgFixel_abs <- f_avgFixel_orig + 
+                    # geom_text(x=x, y=y, size = fontsize_text, family = "Arial", label=label_text) + 
+                    theme_classic() +
+                    theme(text = element_text(size = 15, family="Arial")) +
+                    xlab("Age (years)")
+p_avgFixel_abs <- f_avgFixel_abs + plot_layout(heights = unit(c(70), c('mm')), widths = unit(c(70), c('mm'))) 
+p_avgFixel_abs
+final_width <- 90
+final_height <- 85
+for (ext_figure in list_ext_figure) {
+  ggsave(file.path(main.folder.figures,
+                   paste0("figure_gam_showcase_abs.", ext_figure) ),
+         plot = p_avgFixel_abs, device = ext_figure, dpi = 300, width = final_width, height = final_height, units = "mm")   # 
+}
 # NOTE: as there is more sex=2 than sex=1, and sex is numeric, so the median(df[,sex]) = 2, the gam curve is fitted upon sex=2, i.e. female (2)
 # TODO: check how many fixels' model: sex is significant
 
-# TODO: adjust fonts and font size! ++++++++++++++==
