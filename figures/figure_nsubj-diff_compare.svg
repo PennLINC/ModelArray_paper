@@ -129,18 +129,138 @@
 </defs>
 <g clip-path='url(#cpMzUuODh8MzE5LjM0fDIwMS40N3wzNDMuMjE=)'>
 <rect x='35.88' y='201.47' width='283.46' height='141.73' style='stroke-width: 1.07; stroke: none; fill: #FFFFFF;' />
-<rect x='79.44' y='335.90' width='8.05' height='7.31' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter; fill: #248B46;' />
-<rect x='71.39' y='310.05' width='8.05' height='33.15' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter; fill: #909090;' />
-<rect x='61.54' y='335.83' width='8.05' height='7.37' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter; fill: #248B46;' />
-<rect x='53.49' y='318.32' width='8.05' height='24.89' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter; fill: #909090;' />
-<rect x='130.57' y='335.89' width='8.05' height='7.32' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter; fill: #248B46;' />
-<rect x='122.52' y='286.15' width='8.05' height='57.05' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter; fill: #909090;' />
-<rect x='181.70' y='335.80' width='8.05' height='7.41' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter; fill: #248B46;' />
-<rect x='173.65' y='262.47' width='8.05' height='80.74' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter; fill: #909090;' />
-<rect x='245.61' y='335.74' width='8.05' height='7.47' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter; fill: #248B46;' />
-<rect x='237.56' y='232.64' width='8.05' height='110.56' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter; fill: #909090;' />
-<rect x='293.67' y='335.64' width='8.05' height='7.57' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter; fill: #248B46;' />
-<rect x='285.62' y='212.95' width='8.05' height='130.26' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter; fill: #909090;' />
+<rect x='79.44' y='335.90' width='8.05' height='7.31' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter; fill: #00BFC4;' />
+<rect x='71.39' y='310.05' width='8.05' height='33.15' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter; fill: #F8766D;' />
+<rect x='61.54' y='335.83' width='8.05' height='7.37' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter; fill: #00BFC4;' />
+<rect x='53.49' y='318.32' width='8.05' height='24.89' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter; fill: #F8766D;' />
+<rect x='130.57' y='335.89' width='8.05' height='7.32' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter; fill: #00BFC4;' />
+<rect x='122.52' y='286.15' width='8.05' height='57.05' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter; fill: #F8766D;' />
+<rect x='181.70' y='335.80' width='8.05' height='7.41' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter; fill: #00BFC4;' />
+<rect x='173.65' y='262.47' width='8.05' height='80.74' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter; fill: #F8766D;' />
+<rect x='245.61' y='335.74' width='8.05' height='7.47' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter; fill: #00BFC4;' />
+<rect x='237.56' y='232.64' width='8.05' height='110.56' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter; fill: #F8766D;' />
+<rect x='293.67' y='335.64' width='8.05' height='7.57' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter; fill: #00BFC4;' />
+<rect x='285.62' y='212.95' width='8.05' height='130.26' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter; fill: #F8766D;' />
+</g>
+<defs>
+<linearGradient id='pat-0' gradientUnits='userSpaceOnUse' spreadMethod='pad' x1='83.47' y1='343.21' x2='83.47' y2='335.90'>
+  <stop offset='0.00' stop-color='#CFCFCF' stop-opacity='1.00'/>
+  <stop offset='1.00' stop-color='#248B46' stop-opacity='1.00'/>
+</linearGradient>
+</defs>
+<g clip-path='url(#cpMzUuODh8MzE5LjM0fDIwMS40N3wzNDMuMjE=)'>
+<polygon points='79.44,335.90 87.49,335.90 87.49,343.21 79.44,343.21 79.44,335.90 ' style='stroke-width: 0.75; stroke: none; fill: url(#pat-0);' />
+</g>
+<defs>
+<linearGradient id='pat-1' gradientUnits='userSpaceOnUse' spreadMethod='pad' x1='75.41' y1='343.21' x2='75.41' y2='310.05'>
+  <stop offset='0.00' stop-color='#CFCFCF' stop-opacity='1.00'/>
+  <stop offset='1.00' stop-color='#707070' stop-opacity='1.00'/>
+</linearGradient>
+</defs>
+<g clip-path='url(#cpMzUuODh8MzE5LjM0fDIwMS40N3wzNDMuMjE=)'>
+<polygon points='71.39,310.05 79.44,310.05 79.44,343.21 71.39,343.21 71.39,310.05 ' style='stroke-width: 0.75; stroke: none; fill: url(#pat-1);' />
+</g>
+<defs>
+<linearGradient id='pat-2' gradientUnits='userSpaceOnUse' spreadMethod='pad' x1='65.57' y1='343.21' x2='65.57' y2='335.83'>
+  <stop offset='0.00' stop-color='#CFCFCF' stop-opacity='1.00'/>
+  <stop offset='1.00' stop-color='#248B46' stop-opacity='1.00'/>
+</linearGradient>
+</defs>
+<g clip-path='url(#cpMzUuODh8MzE5LjM0fDIwMS40N3wzNDMuMjE=)'>
+<polygon points='61.54,335.83 69.60,335.83 69.60,343.21 61.54,343.21 61.54,335.83 ' style='stroke-width: 0.75; stroke: none; fill: url(#pat-2);' />
+</g>
+<defs>
+<linearGradient id='pat-3' gradientUnits='userSpaceOnUse' spreadMethod='pad' x1='57.52' y1='343.21' x2='57.52' y2='318.32'>
+  <stop offset='0.00' stop-color='#CFCFCF' stop-opacity='1.00'/>
+  <stop offset='1.00' stop-color='#707070' stop-opacity='1.00'/>
+</linearGradient>
+</defs>
+<g clip-path='url(#cpMzUuODh8MzE5LjM0fDIwMS40N3wzNDMuMjE=)'>
+<polygon points='53.49,318.32 61.54,318.32 61.54,343.21 53.49,343.21 53.49,318.32 ' style='stroke-width: 0.75; stroke: none; fill: url(#pat-3);' />
+</g>
+<defs>
+<linearGradient id='pat-4' gradientUnits='userSpaceOnUse' spreadMethod='pad' x1='134.60' y1='343.21' x2='134.60' y2='335.89'>
+  <stop offset='0.00' stop-color='#CFCFCF' stop-opacity='1.00'/>
+  <stop offset='1.00' stop-color='#248B46' stop-opacity='1.00'/>
+</linearGradient>
+</defs>
+<g clip-path='url(#cpMzUuODh8MzE5LjM0fDIwMS40N3wzNDMuMjE=)'>
+<polygon points='130.57,335.89 138.62,335.89 138.62,343.21 130.57,343.21 130.57,335.89 ' style='stroke-width: 0.75; stroke: none; fill: url(#pat-4);' />
+</g>
+<defs>
+<linearGradient id='pat-5' gradientUnits='userSpaceOnUse' spreadMethod='pad' x1='126.54' y1='343.21' x2='126.54' y2='286.15'>
+  <stop offset='0.00' stop-color='#CFCFCF' stop-opacity='1.00'/>
+  <stop offset='1.00' stop-color='#707070' stop-opacity='1.00'/>
+</linearGradient>
+</defs>
+<g clip-path='url(#cpMzUuODh8MzE5LjM0fDIwMS40N3wzNDMuMjE=)'>
+<polygon points='122.52,286.15 130.57,286.15 130.57,343.21 122.52,343.21 122.52,286.15 ' style='stroke-width: 0.75; stroke: none; fill: url(#pat-5);' />
+</g>
+<defs>
+<linearGradient id='pat-6' gradientUnits='userSpaceOnUse' spreadMethod='pad' x1='185.73' y1='343.21' x2='185.73' y2='335.80'>
+  <stop offset='0.00' stop-color='#CFCFCF' stop-opacity='1.00'/>
+  <stop offset='1.00' stop-color='#248B46' stop-opacity='1.00'/>
+</linearGradient>
+</defs>
+<g clip-path='url(#cpMzUuODh8MzE5LjM0fDIwMS40N3wzNDMuMjE=)'>
+<polygon points='181.70,335.80 189.75,335.80 189.75,343.21 181.70,343.21 181.70,335.80 ' style='stroke-width: 0.75; stroke: none; fill: url(#pat-6);' />
+</g>
+<defs>
+<linearGradient id='pat-7' gradientUnits='userSpaceOnUse' spreadMethod='pad' x1='177.67' y1='343.21' x2='177.67' y2='262.47'>
+  <stop offset='0.00' stop-color='#CFCFCF' stop-opacity='1.00'/>
+  <stop offset='1.00' stop-color='#707070' stop-opacity='1.00'/>
+</linearGradient>
+</defs>
+<g clip-path='url(#cpMzUuODh8MzE5LjM0fDIwMS40N3wzNDMuMjE=)'>
+<polygon points='173.65,262.47 181.70,262.47 181.70,343.21 173.65,343.21 173.65,262.47 ' style='stroke-width: 0.75; stroke: none; fill: url(#pat-7);' />
+</g>
+<defs>
+<linearGradient id='pat-8' gradientUnits='userSpaceOnUse' spreadMethod='pad' x1='249.64' y1='343.21' x2='249.64' y2='335.74'>
+  <stop offset='0.00' stop-color='#CFCFCF' stop-opacity='1.00'/>
+  <stop offset='1.00' stop-color='#248B46' stop-opacity='1.00'/>
+</linearGradient>
+</defs>
+<g clip-path='url(#cpMzUuODh8MzE5LjM0fDIwMS40N3wzNDMuMjE=)'>
+<polygon points='245.61,335.74 253.67,335.74 253.67,343.21 245.61,343.21 245.61,335.74 ' style='stroke-width: 0.75; stroke: none; fill: url(#pat-8);' />
+</g>
+<defs>
+<linearGradient id='pat-9' gradientUnits='userSpaceOnUse' spreadMethod='pad' x1='241.59' y1='343.21' x2='241.59' y2='232.64'>
+  <stop offset='0.00' stop-color='#CFCFCF' stop-opacity='1.00'/>
+  <stop offset='1.00' stop-color='#707070' stop-opacity='1.00'/>
+</linearGradient>
+</defs>
+<g clip-path='url(#cpMzUuODh8MzE5LjM0fDIwMS40N3wzNDMuMjE=)'>
+<polygon points='237.56,232.64 245.61,232.64 245.61,343.21 237.56,343.21 237.56,232.64 ' style='stroke-width: 0.75; stroke: none; fill: url(#pat-9);' />
+</g>
+<defs>
+<linearGradient id='pat-10' gradientUnits='userSpaceOnUse' spreadMethod='pad' x1='297.70' y1='343.21' x2='297.70' y2='335.64'>
+  <stop offset='0.00' stop-color='#CFCFCF' stop-opacity='1.00'/>
+  <stop offset='1.00' stop-color='#248B46' stop-opacity='1.00'/>
+</linearGradient>
+</defs>
+<g clip-path='url(#cpMzUuODh8MzE5LjM0fDIwMS40N3wzNDMuMjE=)'>
+<polygon points='293.67,335.64 301.73,335.64 301.73,343.21 293.67,343.21 293.67,335.64 ' style='stroke-width: 0.75; stroke: none; fill: url(#pat-10);' />
+</g>
+<defs>
+<linearGradient id='pat-11' gradientUnits='userSpaceOnUse' spreadMethod='pad' x1='289.65' y1='343.21' x2='289.65' y2='212.95'>
+  <stop offset='0.00' stop-color='#CFCFCF' stop-opacity='1.00'/>
+  <stop offset='1.00' stop-color='#707070' stop-opacity='1.00'/>
+</linearGradient>
+</defs>
+<g clip-path='url(#cpMzUuODh8MzE5LjM0fDIwMS40N3wzNDMuMjE=)'>
+<polygon points='285.62,212.95 293.67,212.95 293.67,343.21 285.62,343.21 285.62,212.95 ' style='stroke-width: 0.75; stroke: none; fill: url(#pat-11);' />
+<rect x='79.44' y='335.90' width='8.05' height='7.31' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter;' />
+<rect x='71.39' y='310.05' width='8.05' height='33.15' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter;' />
+<rect x='61.54' y='335.83' width='8.05' height='7.37' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter;' />
+<rect x='53.49' y='318.32' width='8.05' height='24.89' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter;' />
+<rect x='130.57' y='335.89' width='8.05' height='7.32' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter;' />
+<rect x='122.52' y='286.15' width='8.05' height='57.05' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter;' />
+<rect x='181.70' y='335.80' width='8.05' height='7.41' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter;' />
+<rect x='173.65' y='262.47' width='8.05' height='80.74' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter;' />
+<rect x='245.61' y='335.74' width='8.05' height='7.47' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter;' />
+<rect x='237.56' y='232.64' width='8.05' height='110.56' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter;' />
+<rect x='293.67' y='335.64' width='8.05' height='7.57' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter;' />
+<rect x='285.62' y='212.95' width='8.05' height='130.26' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter;' />
 <text x='87.49' y='332.14' text-anchor='middle' style='font-size: 8.54px; font-family: "Arial";' textLength='16.60px' lengthAdjust='spacingAndGlyphs'>2.68</text>
 <text x='75.18' y='306.30' text-anchor='middle' style='font-size: 8.54px; font-family: "Arial";' textLength='21.35px' lengthAdjust='spacingAndGlyphs'>12.16</text>
 <text x='69.60' y='332.07' text-anchor='middle' style='font-size: 8.54px; font-family: "Arial";' textLength='16.60px' lengthAdjust='spacingAndGlyphs'>2.71</text>
@@ -296,7 +416,17 @@
 <g clip-path='url(#cpMzMwLjMwfDM5Mi4xN3wyMTEuNzV8MjU4LjIw)'>
 </g>
 <g clip-path='url(#cpMC4wMHwzOTYuODV8MC4wMHwzOTYuODU=)'>
-<rect x='336.49' y='230.75' width='9.92' height='9.92' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter; fill: #909090;' />
+<rect x='335.78' y='230.04' width='11.34' height='11.34' style='stroke-width: 0.00; stroke: none; stroke-linecap: square; stroke-linejoin: miter; fill: #F8766D;' />
+</g>
+<defs>
+<linearGradient id='pat-12' gradientUnits='userSpaceOnUse' spreadMethod='pad' x1='341.45' y1='241.34' x2='341.45' y2='230.08'>
+  <stop offset='0.00' stop-color='#CFCFCF' stop-opacity='1.00'/>
+  <stop offset='1.00' stop-color='#707070' stop-opacity='1.00'/>
+</linearGradient>
+</defs>
+<g clip-path='url(#cpMC4wMHwzOTYuODV8MC4wMHwzOTYuODU=)'>
+<polygon points='335.82,241.34 347.08,241.34 347.08,230.08 335.82,230.08 ' style='stroke-width: 0.75; stroke: none; fill: url(#pat-12);' />
+<rect x='335.78' y='230.04' width='11.34' height='11.34' style='stroke-width: 0.38; stroke: none; stroke-linecap: square; stroke-linejoin: miter;' />
 </g>
 <g clip-path='url(#cpMzMwLjMwfDM5Mi4xN3wyMTEuNzV8MjU4LjIw)'>
 </g>
@@ -305,7 +435,17 @@
 <g clip-path='url(#cpMzMwLjMwfDM5Mi4xN3wyMTEuNzV8MjU4LjIw)'>
 </g>
 <g clip-path='url(#cpMC4wMHwzOTYuODV8MC4wMHwzOTYuODU=)'>
-<rect x='336.49' y='242.09' width='9.92' height='9.92' style='stroke-width: 1.07; stroke: none; stroke-linecap: square; stroke-linejoin: miter; fill: #248B46;' />
+<rect x='335.78' y='241.38' width='11.34' height='11.34' style='stroke-width: 0.00; stroke: none; stroke-linecap: square; stroke-linejoin: miter; fill: #00BFC4;' />
+</g>
+<defs>
+<linearGradient id='pat-13' gradientUnits='userSpaceOnUse' spreadMethod='pad' x1='341.45' y1='252.68' x2='341.45' y2='241.42'>
+  <stop offset='0.00' stop-color='#CFCFCF' stop-opacity='1.00'/>
+  <stop offset='1.00' stop-color='#248B46' stop-opacity='1.00'/>
+</linearGradient>
+</defs>
+<g clip-path='url(#cpMC4wMHwzOTYuODV8MC4wMHwzOTYuODU=)'>
+<polygon points='335.82,252.68 347.08,252.68 347.08,241.42 335.82,241.42 ' style='stroke-width: 0.75; stroke: none; fill: url(#pat-13);' />
+<rect x='335.78' y='241.38' width='11.34' height='11.34' style='stroke-width: 0.38; stroke: none; stroke-linecap: square; stroke-linejoin: miter;' />
 </g>
 <g clip-path='url(#cpMzMwLjMwfDM5Mi4xN3wyMTEuNzV8MjU4LjIw)'>
 </g>

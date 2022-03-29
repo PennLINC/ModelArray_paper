@@ -15,7 +15,8 @@ list.of.packages <- c(#"readxl",  # reading xlsx
                       "egg", "grid",  # set ggplot2 panel size and plot ggplot2 --> not shown up in Rmd?
                       "patchwork",    # for multiple panels in one figure
                       "svglite",   # for ggsave() as .svg 
-                      "ggrepel"   # ggplot2 text will not overlap
+                      "ggrepel",   # ggplot2 text will not overlap
+                      "ggpattern"   # provides gradient pattern in ggplot bars
                       )     
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
@@ -473,8 +474,16 @@ plotGen_compare_diffncores <- function(totals_modelarray, totals_mrtrix,
   theme.legend.spacing.x_unit <- "mm"
   
   f <- ggplot(together_totals, aes(fill=software, y=max.total.GB., x=nparallel)) + 
-                geom_bar(position = position_dodge(width = 0.5), stat="identity", width=0.5) +     # position="dodge"
-              scale_fill_manual(values= c(color_mrtrix, color_modelarray) ) +
+              ggpattern::geom_bar_pattern(position = position_dodge(width = 0.5), stat="identity", width=0.5,    # position="dodge"
+                                          #color="black",size=0.1,   # outline of the bars
+                                          aes(pattern_fill2=software),
+                                          pattern="gradient", pattern_fill=I(c("#CFCFCF"))) +    # , pattern_fill2=I(c(color_mrtrix, color_modelarray))
+                # ggpattern::geom_bar_pattern(position = position_dodge(width = 0.5), stat="identity", width=0.5,    # position="dodge"
+                #                             color="black",size=0.1,
+                #                             pattern_color="white", pattern_fill="white", pattern="stripe",
+                #                             pattern_spacing=0.03, pattern_density=0.02) +    
+              ggpattern::scale_pattern_fill2_manual(values= c(color_mrtrix, color_modelarray) ) +
+              # scale_fill_manual(values= c(color_mrtrix, color_modelarray) ) +
               geom_text(position = position_dodge(width = 0.8), 
                         aes(y=max.total.GB.+delta_y, label=sprintf("%0.2f", round(max.total.GB., digits=2)), hjust=0.4), 
                         size = fontsize_text, angle=0, family = "Arial") + 
@@ -616,8 +625,13 @@ plotGen_compare_diffsubj <- function(totals_modelarray, totals_mrtrix, ncpus,
   xlim <- c(-20, max(totals_modelarray_ready$nsubj)+50)
   
   f <- ggplot(together_totals, aes(fill=software, y=max.total.GB., x=nsubj)) + 
-                  geom_bar(position="dodge", stat="identity") + 
-                scale_fill_manual(values= c(color_mrtrix, color_modelarray) ) +
+                ggpattern::geom_bar_pattern(position="dodge", stat="identity",    # in original geom_bar()
+                                          #color="black",size=0.1,   # outline of the bars
+                                          aes(pattern_fill2=software),
+                                          pattern="gradient", pattern_fill=I(c("#CFCFCF"))) +    # , pattern_fill2=I(c(color_mrtrix, color_modelarray))
+                # geom_bar(position="dodge", stat="identity") + 
+                ggpattern::scale_pattern_fill2_manual(values= c(color_mrtrix, color_modelarray) ) +
+                #scale_fill_manual(values= c(color_mrtrix, color_modelarray) ) +
                 geom_text(position = position_dodge(width = 100),     # ggrepel::geom_text_repel()
                           #position = position_jitterdodge(dodge.width = 50, jitter.width = 20), 
                           aes(y=max.total.GB.+delta_y, label=sprintf("%0.2f", round(max.total.GB., digits=2)), hjust=0.4),   # , hjust=0.3 # , hjust="middle"
@@ -669,7 +683,7 @@ flag_where_now <- "vmware"  # where currently this script is running
 # for ggplot:
 color_parent_process <- "#737373"
 color_children_process <- c("#006E2D", "#248B46", "#40AB5D", "#71C574")
-color_mrtrix <- "#909090"
+color_mrtrix <- "#707070"   # #909090 will be lighter gray
 color_modelarray <- "#248B46"
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
