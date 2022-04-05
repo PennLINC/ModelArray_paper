@@ -6,7 +6,7 @@ This is the README file for benchmarking ModelArray.
 * Download WSS Tools
 
 ## scripts
-* Core script for memory profiling: [myMemoryProfile.sh](myMemoryProfile.sh)
+* Core script for memory profiling: [myMemoryProfiler.sh](myMemoryProfiler.sh)
     * This is to profile memory usage of a process and its child(ren)
     * This uses WSS Tools
 * The R script used for memory profiling ModelArray:
@@ -21,7 +21,6 @@ This is the README file for benchmarking ModelArray.
 * which calls:
     * [benchmark_ModelArray.lm.sh](benchmark_ModelArray.lm.sh)
     * [benchmark_fixelcfestats.sh](benchmark_fixelcfestats.sh)
-* 
 
 
 # Analyze memory benchmarking results and make plots
