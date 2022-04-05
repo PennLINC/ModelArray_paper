@@ -1,6 +1,10 @@
 " This script is to analyze the fixel cluster of significance.
 Steps:
   // python file = ConFixel/notebooks/analyze_signi_cluster.py
+0. Preparation: 
+0.1. Convert results from .h5 to .mif
+0.2. View in mrview, set a threshold, then draw an ROI as mask, save it;
+  
 1. [python]: function: convert_voxelMask_to_fixelIndex()
   This will generate the list of fixel's ids that included in manually drawn mask (ROI.mif)
   
@@ -29,15 +33,20 @@ library("broom")
 library("testthat")
 library("gratia")
 library("ggplot2")
+library("devtools")
+library("patchwork")
 
-# TODO: change the path after moving to ModelArray_paper repository...
+# install ModelArray package:
 
+ModelArray_commitSHA = "9e735b93f2d6b756f8ef18aadc14e2d10c6cc191" # +++++++++++++++
+
+devtools::install_github(paste0("PennLINC/ModelArray@", ModelArray_commitSHA),   # install_github("username/repository@commitSHA")
+                         upgrade = "never",  # not to upgrade package dependencies
+                         force=TRUE)   # force re-install ModelArray again
+library(ModelArray)
 
 source("notebooks/GAMM_plotting.R")   # Bart Larsen's function for visualizing gam results
-source("R/ModelArray_Constructor.R")
-source("R/ModelArray_S4Methods.R")
-source("R/utils.R")
-source("R/analyse.R")
+source("notebooks/utils.R")   # source partialRsq()
 
 step2_thresholding <- function(fn.h5.results, scalar_name, analysis_name, stat_name_thr, thr, flag_compare, folder.h5.results,
                                results_matrix,
@@ -49,9 +58,9 @@ step2_thresholding <- function(fn.h5.results, scalar_name, analysis_name, stat_n
   if (flag_run_step2 == TRUE) {
     # after thresholding, the fixel_id list:
     if (flag_compare == "gt") {
-      fixel_id_list_thr <- results_matrix[(results_matrix[,stat_name_thr] > thr), "fixel_id"]  
+      fixel_id_list_thr <- results_matrix[(results_matrix[,stat_name_thr] > thr), "element_id"]  
     } else if (flag_compare == "lt") {
-      fixel_id_list_thr <- results_matrix[(results_matrix[,stat_name_thr] < thr), "fixel_id"]  
+      fixel_id_list_thr <- results_matrix[(results_matrix[,stat_name_thr] < thr), "element_id"]  
     } else {
       stop("invalid flag_compare!")
     }
@@ -107,19 +116,19 @@ step3_intersect <- function(folder.h5.results,
   
 ### inputs: #####
 num.subj <- 938
-fn.h5.results <- paste0("/home/chenying/Desktop/fixel_project/data/data_from_josiane/results/ltn_FDC_n",toString(num.subj),"_wResults_nfixel-0_20211126-182543.h5")
+fn.h5.results <- paste0("/home/chenying/Desktop/fixel_project/data/data_from_josiane/results/ltn_FDC_n",toString(num.subj),"_wResults_nfixels-0_20220109-183909.h5")
 fn_csv <- paste0("../data/data_from_josiane/df_example_n", toString(num.subj), ".csv")
 scalar_name <- c("FDC")
 
 analysis_name <- "gam_allOutputs"
 
-stat_name_thr <- "s_Age.p.value.bonferroni"   # the stat name for thresholding
-flag_compare <- "lt"
-thr <- 1e-20
-
-# stat_name_thr <- "s_Age.p.value"  # the stat name for thresholding
+# stat_name_thr <- "s_Age.p.value.bonferroni"   # the stat name for thresholding
 # flag_compare <- "lt"
-# thr <- 1e-15
+# thr <- 1e-20
+
+stat_name_thr <- "s_Age.p.value"  # the stat name for thresholding
+flag_compare <- "lt"
+thr <- 1e-15
 
 # stat_name_thr <- "s_Age.eff.size"
 # flag_compare <- "gt"
@@ -133,23 +142,24 @@ flag_flipFixel_signi <- FALSE
 
 ## step 3:
 flag_run_step3 <- FALSE
-filename.fixelIdListMask <- "ROI_x65_sage_p_bonfer_lt_1e-20_fixelIdList.txt"  # for step 3
-#filename.fixelIdListMask <- "ROI_x69_sage_p_lt_1e-15_fixelIdList.txt"  # for step 3
+# filename.fixelIdListMask <- "ROI_x65_sage_p_bonfer_lt_1e-20_fixelIdList.txt"  # for step 3
+filename.fixelIdListMask <- "ROI_x69_sage_p_lt_1e-15_fixelIdList.txt"  # for step 3
 
 ## step 5:
 stat_toPlot <- "s_Age.eff.size"
-formula <- FDC ~ s(Age, k=4, fx=TRUE) + sex
-method.gam.refit <- "GCV.Cp"   # +++++++++++++++
+formula <- FDC ~ s(Age, k=4, fx=TRUE) + sex + dti64MeanRelRMS
+method.gam.refit <- "REML"   # +++++++++++++++
+main.folder.figures <- "/home/chenying/Desktop/fixel_project/ModelArray_paper/figures"
 
 ### load data #####
 folder.h5.results <- gsub(".h5", "", fn.h5.results, fixed=TRUE)
-ModelArray <- ModelArray(fn.h5.results, scalar_types = scalar_name, analysis_names = analysis_name)
-num_fixel_total <- nrow(ModelArray@fixels)
-if (num.subj != ModelArray@sources[[scalar_name]] %>% length()) {
-  stop("number of subjects in ModelArray is not equal to requested one!")  # this is probably not necessary after adding sanity check of source file in .h5 and .csv
+modelarray <- ModelArray(fn.h5.results, scalar_types = scalar_name, analysis_names = analysis_name)
+num_fixel_total <- numElementsTotal(modelarray, scalar_name = "FDC")
+if (num.subj != modelarray@sources[[scalar_name]] %>% length()) {
+  stop("number of subjects in modelarray is not equal to requested one!")  # this is probably not necessary after adding sanity check of source file in .h5 and .csv
 }
-results_matrix <- ModelArray@results[[analysis_name]]$results_matrix 
-# colnames(ModelArray@results$gam_allOutputs$results_matrix )
+results_matrix <- modelarray@results[[analysis_name]]$results_matrix 
+# colnames(modelarray@results$gam_allOutputs$results_matrix )
 
 phenotypes <- read.csv(fn_csv)
 # check # subjects matches:
@@ -177,7 +187,7 @@ fn.fixel_id_list_intersect <- step3_intersect(folder.h5.results,
 fixel_id_list_intersect <- scan(fn.fixel_id_list_intersect, what="", sep="\n") %>% as.integer()
 
 # avg
-scalar_matrix <- scalars(ModelArray)[[scalar_name]]
+scalar_matrix <- scalars(modelarray)[[scalar_name]]
 if (nrow(scalar_matrix) != num_fixel_total) {
   stop("scalar_matrix does not contain full list of fixels!")
 }
@@ -192,7 +202,7 @@ for (i_fixel_selected in 1:length(fixel_id_list_intersect)) {
   # re-fit:
   fixel_id <- fixel_id_list_intersect[i_fixel_selected]
   
-  values <- scalars(ModelArray)[[scalar_name]][(fixel_id + 1),]    # fixel_id starts from 0
+  values <- scalars(modelarray)[[scalar_name]][(fixel_id + 1),]    # fixel_id starts from 0
   
   dat <- phenotypes
   dat[[scalar_name]] <- values
@@ -240,11 +250,12 @@ df_avgFixel[[scalar_name]] <- avgFixel_subj
 ### plot ######
 
 #' @param fixel_id starting from 0!
-plot_oneFixel <- function(ModelArray, fixel_id, scalar_name,
-                          phenotypes,
-                          dat = NULL, return_else = FALSE) {
+plot_oneFixel <- function(modelarray, fixel_id, scalar_name,
+                          formula, method.gam.refit,
+                          phenotypes, dat = NULL,
+                          return_else = FALSE) {
   if (is.null(dat)) {
-    values <- scalars(ModelArray)[[scalar_name]][(fixel_id + 1),]    # fixel_id starts from 0
+    values <- scalars(modelarray)[[scalar_name]][(fixel_id + 1),]    # fixel_id starts from 0
     
     dat <- phenotypes
     dat[[scalar_name]] <- values
@@ -278,13 +289,16 @@ plot_oneFixel <- function(ModelArray, fixel_id, scalar_name,
 }
 
 # plot one fixel:
-f_1 <- plot_oneFixel(ModelArray, fixel_id_list_intersect[1], scalar_name, phenotypes)
-f_last <- plot_oneFixel(ModelArray, fixel_id_list_intersect[length(fixel_id_list_intersect)], scalar_name, phenotypes)
+# f_1 <- plot_oneFixel(modelarray, fixel_id_list_intersect[1], scalar_name, 
+#                      formula = formula, method.gam.refit = method.gam.refit, phenotypes = phenotypes)
+# f_last <- plot_oneFixel(modelarray, fixel_id_list_intersect[length(fixel_id_list_intersect)], scalar_name, 
+#                         formula = formula, method.gam.refit = method.gam.refit, phenotypes = phenotypes)
 
-results <- plot_oneFixel(ModelArray=NULL, NULL, scalar_name, phenotypes, dat=df_avgFixel, return_else = TRUE)
-f_avgFixel <- results$f
+results <- plot_oneFixel(modelarray=NULL, NULL, scalar_name, 
+                         formula = formula, method.gam.refit = method.gam.refit, 
+                         phenotypes = phenotypes, dat=df_avgFixel, return_else = TRUE)
+f_avgFixel_orig <- results$f
 onemodel_avgFixel <- results$onemodel
-f_avgFixel
 
 onemodel_avgFixel.summary <- summary(onemodel_avgFixel)
 onemodel_avgFixel.smoothTerm <- broom::tidy(onemodel_avgFixel, parametric=FALSE)
@@ -293,8 +307,13 @@ onemodel_avgFixel.model <- broom::glance(onemodel_avgFixel)
 
 red.formula <- formula(drop.terms(terms(formula, keep.order = TRUE), 
                                   c(1), keep.response = TRUE))   # drop the first term, i.e. smooth of age
-redmodel_avgFixel <- mgcv::gam(formula=red.formula, data = dat,
-                               method = method.gam.refit)
+# redmodel_avgFixel <- mgcv::gam(formula=red.formula, data = df_avgFixel,
+#                                method = method.gam.refit)  # same as below
+results_red <- plot_oneFixel(modelarray=NULL, NULL, scalar_name, 
+                             formula = red.formula, method.gam.refit = method.gam.refit, 
+                             phenotypes = phenotypes, dat=onemodel_avgFixel$model, return_else = TRUE)  # now using the used data in full model, to be consistent | previous: dat=df_avgFixel
+redmodel_avgFixel <- results_red$onemodel
+  
 redmodel_avgFixel.summary <- summary(redmodel_avgFixel)
 eff.size.avgFixel <- onemodel_avgFixel.summary$r.sq - redmodel_avgFixel.summary$r.sq  
 
@@ -304,20 +323,61 @@ onemodel_avgFixel.summary
 print(paste0("s(Age)'s p.value of re-fit after avg in this cluster = ", toString(s_Age.p.value_avgFixel)))  # if =0, it means <1e-16
 print(paste0("s(Age)'s effect size of re-fit after avg in this cluster = ", sprintf("%.3f",eff.size.avgFixel)))  
 
+# ### get the partial R2:
+# temp <- partialRsq(onemodel_avgFixel, redmodel_avgFixel)
+# partial.rsq.avgFixel <- temp$partialRsq
+# print(paste0("s(Age)'s partial R2 of re-fit after avg in this cluster = ", sprintf("%.3f",partial.rsq.avgFixel)))  
+
 # and add to the plot!
-x = 12; y = 1.65
-# x = 20; y = 0.55
+# x = 12; y = 1.65
+x = 18; y = 0.55; fontsize_text <- 5; fontsize_theme <- 9  # p.value + delta adj Rsq
+#x = 20; y = 0.6  # p.value + delta adj Rsq + partial Rsq
 if (s_Age.p.value_avgFixel < 0.001) {
   txt.s_Age.p.value_avgFixel = "s(Age)'s p.value < 0.001"
 } else {
   txt.s_Age.p.value_avgFixel = paste0("s(Age)'s p.value = ", sprintf("%.3f",s_Age.p.value_avgFixel))
 }
 
- 
-f_avgFixel + geom_text(x=x, y=y, size = 6,
-                       label=paste0(txt.s_Age.p.value_avgFixel, "\n",
-                                    "s(Age)'s effect size = ", sprintf("%.3f",eff.size.avgFixel)))
+label_text <-  paste0(txt.s_Age.p.value_avgFixel, "\n",
+                      "s(Age)'s delta adj Rsq = ", sprintf("%.3f",eff.size.avgFixel) )      #  ,"\n",
+  #"s(Age)'s partial Rsq = ", sprintf("%.3f",partial.rsq.avgFixel))) 
 
+f_avgFixel <- f_avgFixel_orig + 
+  # geom_text(x=x, y=y, size = fontsize_text, family = "Arial", label=label_text) + 
+                  theme_classic() +
+                  theme(text = element_text(size = fontsize_theme, family="Arial")) +
+                  xlab("Age (years)")
+                              
+
+p_avgFixel <- f_avgFixel + plot_layout(heights = unit(c(70), c('mm')), widths = unit(c(70), c('mm'))) 
+p_avgFixel
+
+### save the figure:
+final_width <- 90
+final_height <- 85
+
+list_ext_figure <- c("jpeg", "svg")
+for (ext_figure in list_ext_figure) {
+  ggsave(file.path(main.folder.figures,
+                   paste0("figure_gam_showcase_panelB.", ext_figure) ),
+         plot = p_avgFixel, device = ext_figure, dpi = 300, width = final_width, height = final_height, units = "mm")   # 
+}
+
+### save the figure - for graphic abstract:
+f_avgFixel_abs <- f_avgFixel_orig + 
+                    # geom_text(x=x, y=y, size = fontsize_text, family = "Arial", label=label_text) + 
+                    theme_classic() +
+                    theme(text = element_text(size = 15, family="Arial")) +
+                    xlab("Age (years)")
+p_avgFixel_abs <- f_avgFixel_abs + plot_layout(heights = unit(c(70), c('mm')), widths = unit(c(70), c('mm'))) 
+p_avgFixel_abs
+final_width <- 90
+final_height <- 85
+for (ext_figure in list_ext_figure) {
+  ggsave(file.path(main.folder.figures,
+                   paste0("figure_gam_showcase_abs.", ext_figure) ),
+         plot = p_avgFixel_abs, device = ext_figure, dpi = 300, width = final_width, height = final_height, units = "mm")   # 
+}
 # NOTE: as there is more sex=2 than sex=1, and sex is numeric, so the median(df[,sex]) = 2, the gam curve is fitted upon sex=2, i.e. female (2)
 # TODO: check how many fixels' model: sex is significant
 

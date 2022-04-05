@@ -28,8 +28,8 @@ library(ggside)
 library(ggplot2)   # added by Chenying
 
 font_size <- 16
-theme_set(theme_classic(base_family = "sans",base_size = font_size))
-theme_replace(axis.text=element_text(colour = "black",size = font_size))
+#theme_set(theme_classic(base_family = "Arial",base_size = font_size))
+#theme_replace(axis.text=element_text(colour = "black",size = font_size))
 line_size <- 1.5
 point_size <- 2
 ### function to extract derivative, confidence interval, significance, and plot for GAMs ###
