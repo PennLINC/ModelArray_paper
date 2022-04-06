@@ -468,10 +468,11 @@ plotGen_compare_diffncores <- function(totals_modelarray, totals_mrtrix,
   
   fontsize_text <- 3
   fontsize_theme <- 9
-  theme.legend.key.size_value <- 4
+  theme.legend.key.size_value <- 3.5   # for plots made by ggpattern, this value is a bit smaller than plots by ggplots
   theme.legend.key.size_unit <- "mm"
   theme.legend.spacing.x_value <- 1
   theme.legend.spacing.x_unit <- "mm"
+  # tried *.y but does not apply to ggpattern - there is no gap between legends squares in ggpattern...
   
   f <- ggplot(together_totals, aes(fill=software, y=max.total.GB., x=nparallel)) + 
               ggpattern::geom_bar_pattern(position = position_dodge(width = 0.5), stat="identity", width=0.5,    # position="dodge"
@@ -618,7 +619,7 @@ plotGen_compare_diffsubj <- function(totals_modelarray, totals_mrtrix, ncpus,
   
   fontsize_text <- 3
   fontsize_theme <- 9
-  theme.legend.key.size_value <- 4
+  theme.legend.key.size_value <- 3.5   # for plots made by ggpattern, this value is a bit smaller than plots by ggplots
   theme.legend.key.size_unit <- "mm"
   theme.legend.spacing.x_value <- 1
   theme.legend.spacing.x_unit <- "mm"

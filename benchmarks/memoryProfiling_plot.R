@@ -77,7 +77,8 @@ readWssSingleParent <- function(folder) {
                           output.txt, fixed = TRUE)
     
     if (length(flag.finished) == 0) {   # did not find any line
-      warning("did not finish permutation...")
+      print(paste0("error in folder: ", folder))
+      stop("did not finish permutation...")
     }
     
     
@@ -184,6 +185,7 @@ summaryMemProfiling <- function(folder, profiling.setup = "devtools", roof.num.c
   temp <- grep(tempstr,
                Routput, fixed = TRUE)
   if (length(temp) == 0) {
+    print(paste0("error in folder: ", folder))
    stop("The output dataframe's dimension is not as expected, or the memory profiling was not as expected")
     
   } 
