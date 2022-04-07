@@ -38,7 +38,8 @@ library("patchwork")
 
 # install ModelArray package:
 
-ModelArray_commitSHA = "9e735b93f2d6b756f8ef18aadc14e2d10c6cc191" # +++++++++++++++
+#ModelArray_commitSHA = "9e735b93f2d6b756f8ef18aadc14e2d10c6cc191" # +++++++++++++++
+ModelArray_commitSHA = "0911c4ffbcc737ea9a615f7a663f57bb0b4e174d"   # ++++++++++++++++=
 
 devtools::install_github(paste0("PennLINC/ModelArray@", ModelArray_commitSHA),   # install_github("username/repository@commitSHA")
                          upgrade = "never",  # not to upgrade package dependencies
