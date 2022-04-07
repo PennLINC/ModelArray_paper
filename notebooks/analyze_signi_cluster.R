@@ -1,6 +1,6 @@
 " This script is to analyze the fixel cluster of significance.
 Steps:
-  // python file = ConFixel/notebooks/analyze_signi_cluster.py
+  // python file = ModelArray_paper/notebooks/analyze_signi_cluster.py
 0. Preparation: 
 0.1. Convert results from .h5 to .mif
 0.2. View in mrview, set a threshold, then draw an ROI as mask, save it;

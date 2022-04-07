@@ -5,7 +5,7 @@ This is to get the list of fixel indices of a significant cluster
     -  convert it into fixel mask: with list of fixel indices
 
 
-After these, will run FixelArray/notebooks/analyze_signi_cluster.R for plotting the results
+After these, will run ModelArray_paper/notebooks/analyze_signi_cluster.R for plotting the results
 '''
 
 import argparse
