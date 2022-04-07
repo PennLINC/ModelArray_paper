@@ -150,7 +150,8 @@ if __name__ == '__main__':   # main function
     # the .h5 file with results of statistics, saved from R:
     fn_h5_results = "/home/chenying/Desktop/fixel_project/data/data_from_josiane/results/ltn_FDC_n938_wResults_nfixels-0_20220109-183909.h5"
     # manually defined mask - for a bigger, rough boundary of cluster:
-    filename_manual_mask = "ROI_x69_sage_p_lt_1e-15.mif"  # this should be a .mif file!
+    #filename_manual_mask = "ROI_x69_sage_p_lt_1e-15.mif"  # this should be a .mif file!
+    filename_manual_mask = "ROI_brainstem_x69_sage_p_lt_1e-15.mif"   # <-- this is brainstem!!
 
     # for thresholding:
     analysis_name = "gam_allOutputs"

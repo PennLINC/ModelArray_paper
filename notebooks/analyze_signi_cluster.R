@@ -136,15 +136,16 @@ thr <- 1e-15
 # thr <- 0.2
 
 ## step 2: 
-flag_run_step2 <- FALSE   # run once is enough; independent from python's output
+flag_run_step2 <- TRUE   # run once is enough; independent from python's output
 
 flag_flipFixel_roi <- TRUE
 flag_flipFixel_signi <- FALSE
 
 ## step 3:
-flag_run_step3 <- FALSE
+flag_run_step3 <- TRUE
 # filename.fixelIdListMask <- "ROI_x65_sage_p_bonfer_lt_1e-20_fixelIdList.txt"  # for step 3
-filename.fixelIdListMask <- "ROI_x69_sage_p_lt_1e-15_fixelIdList.txt"  # for step 3
+# filename.fixelIdListMask <- "ROI_x69_sage_p_lt_1e-15_fixelIdList.txt"  # for step 3
+filename.fixelIdListMask <- "ROI_brainstem_x69_sage_p_lt_1e-15_fixelIdList.txt"   # <- brainstem!!!
 
 ## step 5:
 stat_toPlot <- "s_Age.eff.size"
