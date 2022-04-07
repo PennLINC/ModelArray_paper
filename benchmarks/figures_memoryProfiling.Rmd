@@ -923,7 +923,7 @@ f_compare
 
 p_together <- f_modelarray + f_compare + plot_layout(nrow=2, heights = unit(c(50,50), c('mm','mm')), widths = unit(c(100), c('mm')), guides = 'collect') + plot_annotation(tag_levels = 'A') & theme(legend.position = 'right', plot.margin = margin(0, 0, 1, 0, "mm"))   # 
 final_width <- 140
-final_height <- 140
+final_height <- 125
 
 
 # ## or, in a row:   # with similar bar sizes as figure 2, cannot fit into 140mm final width.....
