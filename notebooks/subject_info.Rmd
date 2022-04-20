@@ -1,0 +1,42 @@
+---
+title: "PNC subject info"
+author: "Chenying Zhao"
+output: html_document
+---
+
+This Rmd is to calculate the subject statistics in the PNC dataset used in ModelArray paper.
+
+```{r}
+rm(list=ls())
+```
+
+```{r inputs}
+num.subj <- 938
+fn.csv <- paste0("../../data/data_from_josiane/df_example_n", toString(num.subj), ".csv")
+
+phenotypes <- read.csv(fn.csv)
+# check # subjects matches:
+if (nrow(phenotypes) != num.subj) {
+  stop(paste0("number of subjects in .csv = ", toString(nrow(phenotypes)), ", is not equal to entered number = ", toString(num.subj)))
+}
+```
+
+```{r age}
+age.min <- min(phenotypes$Age)
+age.max <- max(phenotypes$Age)
+age.mean <- mean(phenotypes$Age)
+age.sd <- sd(phenotypes$Age)
+
+str.digits <- "%.3f"
+print("the following digits is: ")
+print(str.digits)
+
+print(paste0("min of age = ", sprintf(str.digits, age.min), " years"))
+print(paste0("max of age = ", sprintf(str.digits, age.max), " years"))
+print(paste0("mean of age = ", sprintf(str.digits, age.mean), " years"))
+print(paste0("sd of age = ", sprintf(str.digits, age.sd), " years"))
+```
+
+```{r sex}
+
+```
