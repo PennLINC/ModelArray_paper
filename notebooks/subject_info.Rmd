@@ -6,8 +6,10 @@ output: html_document
 
 This Rmd is to calculate the subject statistics in the PNC dataset used in ModelArray paper.
 
-```{r}
+```{r load libraries, include=FALSE}
 rm(list=ls())
+library(testthat)
+library(dplyr)
 ```
 
 ```{r inputs}
@@ -19,9 +21,14 @@ phenotypes <- read.csv(fn.csv)
 if (nrow(phenotypes) != num.subj) {
   stop(paste0("number of subjects in .csv = ", toString(nrow(phenotypes)), ", is not equal to entered number = ", toString(num.subj)))
 }
+
+print(paste0("total number of subjects = ", toString(num.subj)))
 ```
 
-```{r age}
+```{r age, echo=FALSE}
+expect_false(is.na(phenotypes$Age) %>% any())   # there should not be any NAs, i.e. all should be FALSE, without any TRUE
+expect_false(anyNA(phenotypes$Age))   # there should not be any NAs
+
 age.min <- min(phenotypes$Age)
 age.max <- max(phenotypes$Age)
 age.mean <- mean(phenotypes$Age)
@@ -37,6 +44,16 @@ print(paste0("mean of age = ", sprintf(str.digits, age.mean), " years"))
 print(paste0("sd of age = ", sprintf(str.digits, age.sd), " years"))
 ```
 
-```{r sex}
+```{r sex, echo=FALSE}
+expect_false(is.na(phenotypes$sex) %>% any())   # there should not be any NAs, i.e. all should be FALSE, without any TRUE
+expect_false(anyNA(phenotypes$sex))   # there should not be any NAs
 
+# sex=1 male and 2 female <- slack 2021.8.23
+num.M <- length(phenotypes$sex[phenotypes$sex == 1])
+num.F <- length(phenotypes$sex[phenotypes$sex == 2])
+expect_equal(num.M + num.F,
+             num.subj)
+
+print(paste0("number of males = ", sprintf("%d", num.M)))
+print(paste0("number of females = ", sprintf("%d", num.F)))
 ```

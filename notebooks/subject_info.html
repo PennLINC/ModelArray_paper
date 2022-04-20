@@ -171,7 +171,6 @@ pre code {
 
 
 <p>This Rmd is to calculate the subject statistics in the PNC dataset used in ModelArray paper.</p>
-<pre class="r"><code>rm(list=ls())</code></pre>
 <pre class="r"><code>num.subj &lt;- 938
 fn.csv &lt;- paste0(&quot;../../data/data_from_josiane/df_example_n&quot;, toString(num.subj), &quot;.csv&quot;)
 
@@ -179,25 +178,18 @@ phenotypes &lt;- read.csv(fn.csv)
 # check # subjects matches:
 if (nrow(phenotypes) != num.subj) {
   stop(paste0(&quot;number of subjects in .csv = &quot;, toString(nrow(phenotypes)), &quot;, is not equal to entered number = &quot;, toString(num.subj)))
-}</code></pre>
-<pre class="r"><code>age.min &lt;- min(phenotypes$Age)
-age.max &lt;- max(phenotypes$Age)
-age.mean &lt;- mean(phenotypes$Age)
-age.sd &lt;- sd(phenotypes$Age)
+}
 
-str.digits &lt;- &quot;%.3f&quot;
-print(&quot;the following digits is: &quot;)</code></pre>
+print(paste0(&quot;total number of subjects = &quot;, toString(num.subj)))</code></pre>
+<pre><code>## [1] &quot;total number of subjects = 938&quot;</code></pre>
 <pre><code>## [1] &quot;the following digits is: &quot;</code></pre>
-<pre class="r"><code>print(str.digits)</code></pre>
 <pre><code>## [1] &quot;%.3f&quot;</code></pre>
-<pre class="r"><code>print(paste0(&quot;min of age = &quot;, sprintf(str.digits, age.min), &quot; years&quot;))</code></pre>
 <pre><code>## [1] &quot;min of age = 8.167 years&quot;</code></pre>
-<pre class="r"><code>print(paste0(&quot;max of age = &quot;, sprintf(str.digits, age.max), &quot; years&quot;))</code></pre>
 <pre><code>## [1] &quot;max of age = 23.000 years&quot;</code></pre>
-<pre class="r"><code>print(paste0(&quot;mean of age = &quot;, sprintf(str.digits, age.mean), &quot; years&quot;))</code></pre>
 <pre><code>## [1] &quot;mean of age = 15.312 years&quot;</code></pre>
-<pre class="r"><code>print(paste0(&quot;sd of age = &quot;, sprintf(str.digits, age.sd), &quot; years&quot;))</code></pre>
 <pre><code>## [1] &quot;sd of age = 3.444 years&quot;</code></pre>
+<pre><code>## [1] &quot;number of males = 417&quot;</code></pre>
+<pre><code>## [1] &quot;number of females = 521&quot;</code></pre>
 
 
 
