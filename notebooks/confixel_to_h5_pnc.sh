@@ -1,9 +1,10 @@
 #!/bin/bash
 # this is to use ConFixel to convert .mif files into a .h5 file
 
-source config.txt    # to get variable "conda_env"
+source ../config_global.txt    # to get variable "conda_env"
 
 # activate the conda environment:
+source ~/miniconda3/etc/profile.d/conda.sh    # !!! have to source it before running "conda activate <name>"
 conda activate ${conda_env}   
 
 # also temporarily change folder "for_fixelcfestats" as "FDC"

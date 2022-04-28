@@ -1,0 +1,4 @@
+# configurations (global)
+conda_env="modelarray_paper"  # conda env name | Chenying's vmware
+rstudio_path="/usr/bin/rstudio"   # where is my rstudio installed | Chenying's vmware
+ConFixel_commitSHA="f5a776660e145e755850c7e1a576353addfa3420"

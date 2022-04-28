@@ -1,7 +1,10 @@
 #!/bin/bash
 
-# make sure the conda env is correct:
-# conda activate test_confixel   # <- only do this when running on Chenying's local vmware!
+source ../config_global.txt    # to get variable "conda_env"
+
+# activate the conda environment:
+source ~/miniconda3/etc/profile.d/conda.sh    # !!! have to source it before running "conda activate <name>"
+conda activate ${conda_env}  
 
 # also temporarily change folder "for_fixelcfestats" as "FDC"
 
