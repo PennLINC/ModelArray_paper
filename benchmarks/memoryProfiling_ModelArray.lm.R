@@ -18,7 +18,6 @@ ModelArray_commitSHA <- as.character(args[5])   # github commit SHA for installi
 ModelArrayPaper_commitSHA <- as.character(args[6])  # record for commit SHA for ModelArray_paper
 
 flag_library_what <- "automatically"   # "automatically" or "manually"
-# TODO: different variables and formula!
 
 # checkers:
 message(paste0("which dataset: ", flag_whichdataset))
@@ -79,13 +78,7 @@ sessionInfo()  # including R versoin, attached packages version
 message(" ")
 
 
-# prev_m <- 0; m <- mem_used(); m - prev_m
-
-# flag_whichdataset <- "test_n50"   # "test_n50" or "josiane"
-# print(paste0("this is dataset: ", flag_whichdataset))
-
 flag_which_subset <- ""
-
 
 ### filenames #####
 if (flag_whichdataset == "test_n50") {
@@ -103,11 +96,11 @@ if (flag_whichdataset == "test_n50") {
 
 } else if (flag_whichdataset == "josiane") {
   if (flag_where == "CUBIC") {
-    fn <- paste0("../../dropbox/data_from_josiane/ltn_FDC_n", toString(num.subj), ".h5")
+    fn <- paste0("../../dropbox/data_from_josiane/ltn_FDC_n", toString(num.subj), "_confixel.h5")
     fn.output <- fn  # same as input (to avoid copying)
     fn_csv <- paste0("../../dropbox/data_from_josiane/df_example_n", toString(num.subj), ".csv")
   } else if (flag_where == "vmware") {
-    fn <- paste0("../../data/data_from_josiane/ltn_FDC_n", toString(num.subj), ".h5")
+    fn <- paste0("../../data/data_from_josiane/ltn_FDC_n", toString(num.subj), "_confixel.h5")
     fn.output <- fn  # same as input (to avoid copying)
     fn_csv <- paste0("../../data/data_from_josiane/df_example_n", toString(num.subj), ".csv")
   }
@@ -205,10 +198,5 @@ Sys.sleep(sleep_sec)
 # writeResults(fn.output, df.output = lm.outputs, analysis_name=analysis_name, overwrite=TRUE)
 # 
 # toc(log=TRUE)   # pairing tic of "Running writeResults()"
-
-# prev_m <- m; m <- mem_used(); m - prev_m
-# delta_m <- m - prev_m
-# delta_m
-# delta_m / 1024 / 1024   # MB
 
 toc(log=TRUE)    # pairing tic of "R running"

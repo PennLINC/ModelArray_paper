@@ -57,11 +57,11 @@ function wait_r_end {
 # echo $cmd
 # $cmd
 
-# wait_r_end 300  # in seconds
-# bash myDropCaches.sh
-# cmd="bash wrapper_benchmark_ModelArray.lm.sh -s 1 -D josiane -f 0 -S 938 -c 4 -w vmware -M TRUE"
-# echo $cmd
-# $cmd
+wait_r_end 300  # in seconds
+bash myDropCaches.sh
+cmd="bash wrapper_benchmark_ModelArray.lm.sh -s 1 -D josiane -f 0 -S 938 -c 4 -w vmware -M TRUE"
+echo $cmd
+$cmd
 
 # wait_r_end 300   # in seconds
 # bash myDropCaches.sh
