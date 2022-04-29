@@ -1,5 +1,13 @@
 #!/bin/bash
 
+source ../config_global.txt
+
+# activate the appropriate conda env:
+source ${conda_sh_file}    # !!! have to source it before running "conda activate <name>"
+conda activate ${conda_env}
+current_conda_env=`echo $CONDA_DEFAULT_ENV`   # get the current conda enviroment's name
+echo "current conda environment: ${current_conda_env}"
+
 function wait_r_end {
     while :
     do
@@ -31,35 +39,35 @@ function wait_r_end {
 # echo $cmd
 # $cmd
 
-wait_r_end 300  # in seconds
-bash myDropCaches.sh
-cmd="bash wrapper_benchmark_ModelArray.lm.sh -s 1 -D josiane -f 0 -S 300 -c 4 -w vmware -M TRUE"
-echo $cmd
-$cmd
+# wait_r_end 300  # in seconds
+# bash myDropCaches.sh
+# cmd="bash wrapper_benchmark_ModelArray.lm.sh -s 1 -D josiane -f 0 -S 300 -c 4 -w vmware -M TRUE"
+# echo $cmd
+# $cmd
 
-wait_r_end 300  # in seconds
-bash myDropCaches.sh
-cmd="bash wrapper_benchmark_ModelArray.lm.sh -s 1 -D josiane -f 0 -S 500 -c 4 -w vmware -M TRUE"
-echo $cmd
-$cmd
+# wait_r_end 300  # in seconds
+# bash myDropCaches.sh
+# cmd="bash wrapper_benchmark_ModelArray.lm.sh -s 1 -D josiane -f 0 -S 500 -c 4 -w vmware -M TRUE"
+# echo $cmd
+# $cmd
 
-wait_r_end 300  # in seconds
-bash myDropCaches.sh
-cmd="bash wrapper_benchmark_ModelArray.lm.sh -s 1 -D josiane -f 0 -S 750 -c 4 -w vmware -M TRUE"
-echo $cmd
-$cmd
+# wait_r_end 300  # in seconds
+# bash myDropCaches.sh
+# cmd="bash wrapper_benchmark_ModelArray.lm.sh -s 1 -D josiane -f 0 -S 750 -c 4 -w vmware -M TRUE"
+# echo $cmd
+# $cmd
 
-wait_r_end 300  # in seconds
-bash myDropCaches.sh
-cmd="bash wrapper_benchmark_ModelArray.lm.sh -s 1 -D josiane -f 0 -S 938 -c 4 -w vmware -M TRUE"
-echo $cmd
-$cmd
+# wait_r_end 300  # in seconds
+# bash myDropCaches.sh
+# cmd="bash wrapper_benchmark_ModelArray.lm.sh -s 1 -D josiane -f 0 -S 938 -c 4 -w vmware -M TRUE"
+# echo $cmd
+# $cmd
 
-wait_r_end 300   # in seconds
-bash myDropCaches.sh
-cmd="bash wrapper_benchmark_ModelArray.lm.sh -s 1 -D josiane -f 0 -S 30 -c 2 -w vmware -M TRUE"
-echo $cmd
-$cmd
+# wait_r_end 300   # in seconds
+# bash myDropCaches.sh
+# cmd="bash wrapper_benchmark_ModelArray.lm.sh -s 1 -D josiane -f 0 -S 30 -c 2 -w vmware -M TRUE"
+# echo $cmd
+# $cmd
 
 # wait_r_end 300   # in seconds
 # bash myDropCaches.sh

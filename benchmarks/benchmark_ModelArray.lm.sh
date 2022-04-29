@@ -1,5 +1,15 @@
 #!/bin/bash
 
+source ../config_global.txt
+unset ModelArray_commitSHA  # remove this variable which will later be set in the inputs
+unset flag_where  # later: run_where
+
+# activate the appropriate conda env:
+source ${conda_sh_file}    # !!! have to source it before running "conda activate <name>"
+conda activate ${conda_env}
+current_conda_env=`echo $CONDA_DEFAULT_ENV`   # get the current conda enviroment's name
+echo "current conda environment: ${current_conda_env}"
+
 while getopts s:D:f:S:c:w:o:M:A:a: flag
 do
 	case "${flag}" in
@@ -30,36 +40,10 @@ echo "run_where: $run_where"
 echo "output_folder: $output_folder"
 
 
-#singularity instance start -e -B $TMPDIR:/var -B $HOME:/root    /cbica/projects/fixel_db/myr_r4.1.0forModelArray.sif myr_r4.1.0forModelArray
-#singularity instance list
-#singularity exec instance://myr_r4.1.0forModelArray Rscript /cbica/projects/fixel_db/ModelArray/notebooks/memoryProfiling_ModelArray.lm.R
-
-# if [[ "$run_where" == "vmware" ]]
-# then
-# 	cmd_memrec="perl memrec"
-# 	# cmd_memrec="perl /home/chenying/Desktop/Apps/memrec/pull_from_github/memrec/bin/memrec.pl"
-# 	# cmd_memrec="/home/chenying/Desktop/Apps/wss-master/wss.pl"
-# else
-# 	cmd_memrec="memrec"
-# fi
-
-# filename_memrec_output="memprofile.inMB.every${d_memrec}sec"
-# fn_memrec_output="${output_folder}/${filename_memrec_output}"
-
 fn_R_output="${output_folder}/Routput.txt"
 fn_myMemProf="${output_folder}/output_myMemoryProfiler.txt"
 
-# memrec -d $d_memrec -M -o ${fn_memrec_output} 
-
 echo ""
-# if [[ "$run_where" == "sge"  ]] || [[ "$run_where" == "interactive"   ]]; then
-	# cmd="${cmd_memrec} -d $d_memrec -M -o ${fn_memrec_output} singularity run --cleanenv /cbica/projects/fixel_db/myr_r4.1.0forModelArray.sif Rscript /cbica/projects/fixel_db/ModelArray/notebooks/memoryProfiling_ModelArray.lm.R $dataset_name $num_fixels $num_subj $num_cores"
-# elif [[  "$run_where" == "vmware"  ]]; then
-	# which R
-	# cmd="${cmd_memrec} -d $d_memrec -M -o ${fn_memrec_output} Rscript ./memoryProfiling_ModelArray.lm.R $dataset_name $num_fixels $num_subj $num_cores"  # /home/chenying/Desktop/fixel_project/ModelArray/notebooks
-# fi
-# echo $cmd
-# $cmd
 
 cmd="Rscript ./memoryProfiling_ModelArray.lm.R $dataset_name $num_fixels $num_subj $num_cores ${ModelArray_commitSHA} ${ModelArrayPaper_commitSHA} > ${fn_R_output}  2>&1 &"
 echo $cmd
@@ -69,12 +53,6 @@ parent_id=$!  # get the pid of last execuated command
 
 echo "parent id = ${parent_id}"
 
-#echo "sleep for 10sec to let multicore-computing starts...."
-#sleep 10
-#if [[ "${num_cores}" -gt 1  ]]; then     # more than one cores requested
-#    child_id_list=`pgrep -P ${parent_id}`
-#fi
-#echo "child id(s): ${child_id_list}"
 
 if [[ "$run_memoryProfiler" == "TRUE"  ]]; then
 	bash myMemoryProfiler.sh -P ${parent_id} -c ${num_cores} -s ${sample_sec} -o ${output_folder} > ${fn_myMemProf} 2>&1
@@ -83,20 +61,3 @@ else
 
 fi
 
-
-
-#start_time=$(date +%s.%3N) # however, memrec will run in the background --> the elapsed time is not full time of running memrec
-
-# $cmd
-
-#end_time=$(date +%s.%3N)
-#echo ""
-
-#elapsed=$(echo "scale=3; $end_time - $start_time" | bc)   # millisec, with precision of three digits after floating point
-#echo "elapsed time of memrec: ${elapsed}"
-
-#echo ""
-
-# /cbica/projects/fixel_db/ModelArray/notebooks/
-
-#date

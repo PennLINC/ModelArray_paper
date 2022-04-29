@@ -5,8 +5,10 @@ source ../config_global.txt    # to get variable "conda_env" and "ConFixel_commi
 echo ${conda_env}
 
 # activate the conda environment:
-source ~/miniconda3/etc/profile.d/conda.sh    # !!! have to source it before running "conda activate <name>"
+source ${conda_sh_file}    # !!! have to source it before running "conda activate <name>"
 conda activate ${conda_env}
+current_conda_env=`echo $CONDA_DEFAULT_ENV`   # get the current conda enviroment's name
+echo "current conda environment: ${current_conda_env}"
 
 # checkout to a specific commit SHA:
 cd ../../confixel_for_paper/ConFixel

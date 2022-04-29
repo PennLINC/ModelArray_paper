@@ -18,7 +18,7 @@ done
 #echo "output folder: ${output_folder}"
 
 
-source config.txt
+source ../config_global.txt
 echo $flag_where    # "cubic" or "vmware" or "dopamine"
 
 if [[ "${flag_where}" == "vmware"   ]]; then

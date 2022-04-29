@@ -1,2 +1,0 @@
-flag_where="vmware"    # "cubic" or "vmware" or "dopamine"
-ModelArray_commitSHA="0911c4ffbcc737ea9a615f7a663f57bb0b4e174d"  # copied from github

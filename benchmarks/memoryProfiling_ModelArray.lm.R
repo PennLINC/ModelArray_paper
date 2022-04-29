@@ -28,7 +28,8 @@ message(paste0("number of cores = "), toString(num.cores))
 message(paste0("ModelArray_paper's commitSHA = ", ModelArrayPaper_commitSHA))
 # message(paste0("class of arguments: ",class(flag_whichdataset), "; ", class(num.fixels), "; ", class(num.subj), "; ", class(num.cores)))
 
-
+message(".libPaths():")
+.libPaths()   # expect: a folder in conda env
 
 
 ### basics #####

@@ -689,7 +689,7 @@ color_modelarray <- "#248B46"
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 if (flag_where_now == "vmware") {
-  main.folder.modelarray <- "/home/chenying/Desktop/fixel_project/FixelArray_benchmark"
+  main.folder.modelarray <- "/home/chenying/Desktop/fixel_project/ModelArray_benchmark"
   main.folder.mrtrix <- "/home/chenying/Desktop/fixel_project/data/data_from_josiane/for_fixelcfestats/stats_FDC"
   main.folder.figures <- "/home/chenying/Desktop/fixel_project/ModelArray_paper/figures"
 }

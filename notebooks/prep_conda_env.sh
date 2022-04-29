@@ -4,7 +4,7 @@ source ../config_global.txt    # to get variable "conda_env" and "rstudio_path"
 echo "conda env name: ${conda_env}"
 
 ## create a new conda env:
-source ~/miniconda3/etc/profile.d/conda.sh    # !!! have to source it before running "conda activate <name>"
+source ${conda_sh_file}    # !!! have to source it before running "conda activate <name>"
 
 conda create --name ${conda_env} python=3.9
 conda activate ${conda_env}

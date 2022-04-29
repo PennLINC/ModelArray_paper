@@ -8,10 +8,10 @@ This is the README file for benchmarking ModelArray.
 ## scripts
 * Core script for memory profiling: [myMemoryProfiler.sh](myMemoryProfiler.sh)
     * This is to profile memory usage of a process and its child(ren)
-    * This uses WSS Tools
+    * This uses [WSS Tools](https://github.com/brendangregg/wss)
 * The R script used for memory profiling ModelArray:
     * [memoryProfiling_ModelArray.lm.R](memoryProfiling_ModelArray.lm.R)
-    * this requires a ModelArray commit SHA in [config.txt](config.txt)
+    * this requires a ModelArray commit SHA in [../config_global.txt](../config_global.txt)
 * Directly use the scripts to run memory profiling: 
     * [run_wrapper_benchmark_ModelArray.lm.sh](run_wrapper_benchmark_ModelArray.lm.sh)
     * [run_wrapper_benchmark_fixelcfestats.sh](run_wrapper_benchmark_fixelcfestats.sh)

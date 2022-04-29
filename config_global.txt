@@ -1,4 +1,8 @@
 # configurations (global)
+# When sourcing this file: make sure there is no existing variable in the script with the same name as below. Otherwise the variable may have incorrect value!
+flag_where="vmware"    # "cubic" or "vmware" or "dopamine"
+conda_sh_file="/home/chenying/miniconda3/etc/profile.d/conda.sh"   # path to the conda.sh file | Chenying's vmware
 conda_env="modelarray_paper"  # conda env name | Chenying's vmware
 rstudio_path="/usr/bin/rstudio"   # where is my rstudio installed | Chenying's vmware
 ConFixel_commitSHA="f5a776660e145e755850c7e1a576353addfa3420"
+ModelArray_commitSHA="1656835cb2d7f820486a03bb46e6dfc037b8e9a4"

@@ -5,7 +5,15 @@
 # bash wrapper_benchmark_ModelArray.lm.sh -s 1 -D josiane -f 0 -S 30 -c 2 -w vmware -M TRUE
 # qsub -l h_vmem=30G wrapper_benchmark_ModelArray.lm.sh -s 1 -D test_n50 -f 100 -S 100 -c 2 -w sge -M TRUE   # this will add ${JOB_ID} to foldername; run at interactive node to determine the memory requirements... # tried 20G, did not run..
 
-source ../benchmarks/config.txt  # flag_where and ModelArray_commitSHA
+source ../config_global.txt  # flag_where and ModelArray_commitSHA, etc
+unset flag_where 
+
+# activate the appropriate conda env:
+source ${conda_sh_file}    # !!! have to source it before running "conda activate <name>"
+conda activate ${conda_env}
+current_conda_env=`echo $CONDA_DEFAULT_ENV`   # get the current conda enviroment's name
+echo "current conda environment: ${current_conda_env}"
+
 
 while getopts s:D:f:S:c:w:O:M: flag
 do
@@ -54,7 +62,7 @@ elif [[ "$run_where" == "interactive"   ]]; then
         folder_benchmark="/cbica/projects/fixel_db/FixelArray_benchmark"
 
 elif [[ "$run_where" == "vmware"   ]]; then
-        folder_benchmark="/home/chenying/Desktop/fixel_project/FixelArray_benchmark"
+        folder_benchmark="/home/chenying/Desktop/fixel_project/ModelArray_benchmark"
 
         echo "adding date to foldername"
         foldername_jobid="${foldername_jobid}.${date}"
@@ -77,7 +85,5 @@ fn_output_txt="${folder_jobid}/output.txt"
 # echo "fn_output_txt: ${fn_output_txt}"
 
 # call:
-# for memrec:
-# bash benchmark_ModelArray.lm.sh -d $d_memrec -D $dataset_name -f $num_fixels -s $num_subj -c $num_cores -w $run_where -o ${folder_jobid} > $fn_output_txt 2>&1
 # for wss:
 bash benchmark_ModelArray.lm.sh -s $sample_sec -D $dataset_name -f $num_fixels -S $num_subj -c $num_cores -w $run_where -o ${folder_jobid} -M ${run_memoryProfiler} -A ${ModelArray_commitSHA} -a ${ModelArrayPaper_commitSHA} > $fn_output_txt 2>&1

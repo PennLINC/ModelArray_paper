@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source config.txt  # THIS IS CONFIG FOR NOTEBOOKS ONLY! DIFFERENT FROM BENCHMARKS'S | flag_where and ModelArray_commitSHA
+source ../config_global.txt  # flag_where and ModelArray_commitSHA
 
 dataset_name="josiane"
 num_fixels=0
