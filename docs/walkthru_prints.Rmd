@@ -1,0 +1,13 @@
+---
+title: "walk through"
+author: "Chenying Zhao"
+output: html_document
+---
+
+This is to get the printed messages for walk-through docs for ModelArray
+
+```{r}
+library(ModelArray)
+```
+
+

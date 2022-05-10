@@ -5,4 +5,4 @@ conda_sh_file="/home/chenying/miniconda3/etc/profile.d/conda.sh"   # path to the
 conda_env="modelarray_paper"  # conda env name | Chenying's vmware
 rstudio_path="/usr/bin/rstudio"   # where is my rstudio installed | Chenying's vmware
 ConFixel_commitSHA="f5a776660e145e755850c7e1a576353addfa3420"
-ModelArray_commitSHA="1656835cb2d7f820486a03bb46e6dfc037b8e9a4"
+ModelArray_commitSHA="b99c274c4df2caa77549f58c110e1761955be839"

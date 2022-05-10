@@ -1,6 +1,8 @@
 
 # HOW TO RUN:
-# use "call_run_walkthru_allFixels.sh"
+# in bash, same folder as this current file:
+# $ Rscript ./memoryProfiling_ModelArray.gam.R  > xxx.txt 2>&1 &
+# or, using "call_showCase_ModelArray.gam.sh"
 
 # set ups
 rm(list = ls())
@@ -10,7 +12,7 @@ library(tictoc)
 tic.clearlog()
 tic("R running")
 
-tic("time before ModelArray.*()")
+tic("time before ModelArray.gam()")
 
 
 ### input arguments #####
@@ -23,6 +25,8 @@ num.subj <- as.integer(args[3])
 num.cores <- as.integer(args[4])
 filename_output_body <- as.character(args[5])  # output filename (without extension)
 commitSHA <- as.character(args[6])   # github commit SHA for installing ModelArray
+which_model <- as.character(args[7])   # "lm" or "gam"
+folder.main <- as.character(args[8])    # the main folder
 
 flag_library_what <- "automatically"   # "automatically" or "manually"
 
@@ -46,12 +50,12 @@ if (flag_library_what == "automatically") {
   message("run: devtools::install_github() to install ModelArray package")
   library(devtools)
   message(paste0("commitSHA: ", commitSHA))
-
+  
   devtools::install_github(paste0("PennLINC/ModelArray@", commitSHA),   # install_github("username/repository@commitSHA")
                            upgrade = "never",   # not to upgrade package dependencies
-                           force=TRUE)   # force re-install ModelArray again
+                           force=FALSE)   # force re-install ModelArray again or not
   library(ModelArray)
-    
+  
 } else if (flag_library_what == "manually") {
   
   message("run: source several R scripts and library some R packages...")
@@ -105,11 +109,10 @@ if (flag_whichdataset == "test_n50") {
   
 } else if (flag_whichdataset == "josiane") {
   if (flag_where == "vmware") {
-    fn <- paste0("../../data/data_from_josiane/ltn_FDC_n", toString(num.subj), "_confixel.h5")
-    #fn.output <-  paste0("../../data/data_from_josiane/results/ltn_FDC_n", toString(num.subj), "_wResults_nfixel-",toString(num.fixels), "_",now_str, ".h5")
-    fn.output <- file.path("../../data/data_from_josiane/results",
-                          paste0(filename_output_body,".h5"))
-    fn_csv <- paste0("../../data/data_from_josiane/df_example_n", toString(num.subj), ".csv")
+    fn <- paste0(folder.main, "/ltn_FDC_n", toString(num.subj), "_demo.h5")
+    fn.output <- file.path(folder.main,
+                           paste0(filename_output_body,".h5"))
+    fn_csv <- paste0(folder.main, "/cohort_FDC_n", toString(num.subj), ".csv")
     
   }
   
@@ -125,34 +128,48 @@ if (fn != fn.output) {
 # h5closeAll()
 
 tic("Running ModelArray()")
-fixelarray <- ModelArray(fn.output, scalar_types = scalar)
+modelarray <- ModelArray(fn.output, scalar_types = scalar)
 toc(log=TRUE)   # pairing tic("Running ModelArray()")
 
-#fixelarray
-#scalars(fixelarray)[[scalar]]
+#modelarray
+#scalars(modelarray)[[scalar]]
 
 #####
 # check # subjects matches:
-if (dim(scalars(fixelarray)[[scalar]])[2] != num.subj) {
-  stop(paste0("number of subjects in .h5 = ", dim(scalars(fixelarray)[[scalar]])[2], ", is not equal to entered number = ", toString(num.subj)))
+if (dim(scalars(modelarray)[[scalar]])[2] != num.subj) {
+  stop(paste0("number of subjects in .h5 = ", dim(scalars(modelarray)[[scalar]])[2], ", is not equal to entered number = ", toString(num.subj)))
 }  
-  
+
 phenotypes <- read.csv(fn_csv)
 # check # subjects matches:
 if (nrow(phenotypes) != num.subj) {
   stop(paste0("number of subjects in .csv = ", toString(nrow(phenotypes)), ", is not equal to entered number = ", toString(num.subj)))
 }
 
+# formula and other arguments:
 if (flag_whichdataset == "test_n50") {
-  formula <- FD ~ s(age, k=4, fx=TRUE) + s(factorA)        
+  formula <- FD ~ s(age, k=4, fx=TRUE) + s(factorA)      
+  
 } else if (flag_whichdataset == "josiane") {
-  formula <- FDC ~ s(Age, k=4, fx = TRUE) + sex + dti64MeanRelRMS  # added motion quantification   # FD ~ s(age, k=4) + sex  # FD ~ s(age) + sex
+  
+  if (which_model == "lm") {
+    formula <- FDC ~ Age
+    flag.full.outputs <- FALSE
+    analysis_name <- "lm_default"
+    
+  } else if (which_model == "gam") {
+    formula <- FDC ~ s(Age, k=4, fx = TRUE) + sex + dti64MeanRelRMS  # added motion quantification   # FD ~ s(age, k=4) + sex  # FD ~ s(age) + sex
+    gam.method = "REML"   # "GCV.Cp", "REML"  # any other methods usually used?
+    flag.full.outputs <- TRUE
+    analysis_name <- "gam_allOutputs"
+    
+  }
+
 }
 
-gam.method = "REML"   # "GCV.Cp", "REML"  # any other methods usually used?
 
 if (num.fixels == 0) {
-  num.fixels <- dim(scalars(fixelarray)[[scalar]])[1]
+  num.fixels <- dim(scalars(modelarray)[[scalar]])[1]
 }
 element.subset <- 1:num.fixels  
 
@@ -163,31 +180,38 @@ toc(log=TRUE)    # pairing tic of "time before ModelArray.gam()"
 
 
 ### running on real data #####
-tic("Running ModelArray.gam()")
-# +++++++++++++++ optional: NEXT TIME: sex --> ordered factor, and use oSex in formula! (this may make the plots - e.g. Bart's function more making sense? as there will be a reference level of female or male)++++++++++++++++++++++++++
-gam_real <- ModelArray.gam(formula = formula, data = fixelarray, phenotypes = phenotypes, scalar = scalar, 
-                           element.subset = element.subset, full.outputs = TRUE,
-                           changed.rsq.term.index = c(1),
-                           correct.p.value.smoothTerms = c("fdr", "bonferroni"),
-                           correct.p.value.parametricTerms = c("fdr", "bonferroni"),
-                           n_cores=num.cores, pbar = TRUE,
-                           method=gam.method)
-toc(log = TRUE)   # pairing tic of "Running ModelArray.gam()"
+tic("Running ModelArray.*()")
+if (which_model == "lm") {
+  mymodel <- ModelArray.lm(formula, modelarray, phenotypes, scalar = scalar, element.subset = element.subset,
+                              full.outputs = flag.full.outputs,  
+                              verbose = TRUE, pbar = FALSE, n_cores = num.cores)  # , na.action="na.fail"
+  
+  
+  
+} else if (which_model == "gam") {
+  mymodel <- ModelArray.gam(formula = formula, data = modelarray, phenotypes = phenotypes, scalar = scalar, 
+                            element.subset = element.subset, full.outputs = flag.full.outputs,
+                            changed.rsq.term.index = c(1),
+                            correct.p.value.smoothTerms = c("fdr", "bonferroni"),
+                            correct.p.value.parametricTerms = c("fdr", "bonferroni"),
+                            n_cores=num.cores, pbar = TRUE,
+                            method=gam.method)
+}
+
+
+toc(log = TRUE)   # pairing tic of "Running ModelArray.*()"
 message("")
 
 message("head of results data frame:")
-head(gam_real)
+head(mymodel)
 # write:
-analysis_name <- "gam_allOutputs"
-writeResults(fn.output, df.output = gam_real, analysis_name=analysis_name, overwrite=TRUE)
+
+writeResults(fn.output, df.output = mymodel, analysis_name=analysis_name, overwrite=TRUE)
 
 # read and see
-fixelarray_new <- ModelArray(fn.output, scalar_types = scalar, analysis_names = analysis_name)
+modelarray_new <- ModelArray(fn.output, scalar_types = scalar, analysis_names = analysis_name)
 message("after saving to .h5:")
-fixelarray_new@results$gam_allOutputs
+modelarray_new@results[[analysis_name]]
 
-# 
-# message("dimension of gam_real:")
-# dim(gam_real)
 
 toc(log=TRUE)   # pairing tic of "R running"

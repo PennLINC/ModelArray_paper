@@ -26,6 +26,7 @@ function wait_r_end {
 # use for correction: # checkout parent.multi and child0.multi
 #bash wrapper_benchmark_ModelArray.lm.sh -s 1 -D test_n50 -f 1000 -S 50 -c 4 -w vmware -M TRUE
 
+wait_r_end 60   # in seconds
 
 # wait_r_end 150   # in seconds
 # bash myDropCaches.sh
@@ -57,7 +58,7 @@ function wait_r_end {
 # echo $cmd
 # $cmd
 
-wait_r_end 300  # in seconds
+#wait_r_end 300  # in seconds
 bash myDropCaches.sh
 cmd="bash wrapper_benchmark_ModelArray.lm.sh -s 1 -D josiane -f 0 -S 938 -c 4 -w vmware -M TRUE"
 echo $cmd

@@ -1,0 +1,71 @@
+---
+title: "prepare walkthru data"
+author: "Chenying Zhao"
+output: html_document
+---
+```{r general setups}
+# PLEASE RUN THIS CHUNK FIRST!
+rm(list=ls())
+nsubj <- 100
+
+library(dplyr)
+library(testthat)
+
+```
+
+
+```{r prepare csv file}
+# only save necessary fields from df_example_n?.csv:
+
+folder.from <- "/home/chenying/Desktop/fixel_project/data/data_from_josiane/"
+folder.to <- "/home/chenying/Desktop/myProject"
+
+fn.csv <- file.path(folder.from, 
+                    paste0("df_example_n",toString(nsubj),".csv"))
+fn.csv.out <- file.path(folder.to, 
+                        paste0("cohort_FDC_n",toString(nsubj),".csv"))
+
+csv.orig <- read.csv(fn.csv)
+
+# remove those behavior data:
+csv <- csv.orig %>% select(c("bblid","sex","Age","dti64MeanRelRMS",
+                        "scalar_name"))
+# add the source_file column:
+csv <- csv %>% mutate(source_file = paste0("FDC/sub-", bblid, ".mif"))
+
+# save
+write.csv(csv, file = fn.csv.out, row.names = FALSE)
+
+
+# csv.reload <- read.csv(fn.csv.out)
+# expect_equal(csv, csv.reload)
+# expect_equal(csv.orig$Age, csv.reload$Age)
+# expect_equal(csv.orig$dti64MeanRelRMS, csv.reload$dti64MeanRelRMS)
+```
+
+
+```{r copy input mif files}
+# prepare walk-thru original data (before sending to ConFixel)
+
+folder_main_to = "/home/chenying/Desktop/myProject"
+folder_to= file.path(folder_main_to, "FDC")
+folder_from="/home/chenying/Desktop/fixel_project/data/data_from_josiane/FDC/fdc_10_smoothed_10fwhm_new"
+
+dir.create(folder_to)
+
+# copy index.mif and directions.mif:
+fn_from = file.path(folder_from, "index.mif")
+file.copy(fn_from, folder_to)
+
+fn_from = file.path(folder_from, "directions.mif")
+file.copy(fn_from, folder_to)
+
+## copy data into a folder
+# read in .csv file:
+csv <- read.csv(file.path(folder_main_to, paste0("cohort_FDC_n",toString(nsubj),".csv")))
+# list of files to copy:
+list.of.files.from <- paste(folder_from, "/sub-", csv$bblid, ".mif", sep="")
+# copy:
+file.copy(list.of.files.from, folder_to)  # expect: all true
+
+```

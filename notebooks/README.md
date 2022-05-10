@@ -7,9 +7,10 @@ This folder is for several notebooks:
 
 * Software and conda env setup:
     * Prepare conda environment: [prep_conda_env.sh](prep_conda_env.sh)
-        * this also includes installing R and dependent packages
+        * this also includes installing R and some dependent packages
         * the conda env name is recorded in ../config_global.txt file
     * Install ConFixel in this conda environment: [install_confixel.sh](install_confixel.sh)
+    * If using RStudio: make sure it's launched in the terminal with correct conda env!
 
 * Convert the data into .h5 file format using ConFixel
     * [confixel_to_h5_pnc.sh](confixel_to_h5_pnc.sh)

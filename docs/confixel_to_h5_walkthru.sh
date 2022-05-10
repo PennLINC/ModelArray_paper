@@ -1,5 +1,6 @@
 #!/bin/bash
 # this is to use ConFixel to convert .mif files into a .h5 file
+# this is for demo data for walk-thru!
 
 source ../config_global.txt    # to get variable "conda_env"
 
@@ -9,15 +10,13 @@ conda activate ${conda_env}
 current_conda_env=`echo $CONDA_DEFAULT_ENV`   # get the current conda enviroment's name
 echo "current conda environment: ${current_conda_env}"
 
-# also temporarily change folder "for_fixelcfestats" as "FDC"
-
 nsubj=100
 cmd="confixel"
-cmd+=" --index-file index_and_directions_files/index.mif"
-cmd+=" --directions-file index_and_directions_files/directions.mif"
-cmd+=" --cohort-file df_example_n${nsubj}.csv"
-cmd+=" --relative-root /home/chenying/Desktop/fixel_project/data/data_from_josiane"
-cmd+=" --output-hdf5 ltn_FDC_n${nsubj}_confixel.h5"
+cmd+=" --index-file FDC/index.mif"
+cmd+=" --directions-file FDC/directions.mif"
+cmd+=" --cohort-file cohort_FDC_n${nsubj}.csv"
+cmd+=" --relative-root /home/chenying/Desktop/myProject"
+cmd+=" --output-hdf5 ltn_FDC_n${nsubj}_demo.h5"
 
 echo $cmd
 $cmd
