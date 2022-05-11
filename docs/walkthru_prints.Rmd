@@ -5,9 +5,58 @@ output: html_document
 ---
 
 This is to get the printed messages for walk-through docs for ModelArray
+THIS FILE SHOULD BE RUN UNDER CONDA ENV "modelarray_paper" TO GET THE CORRECT VERSION OF MODELARRAY AND LIST OF LIBRARIES!
+```{r, echo=FALSE}
+rm(list=ls())
+
+library(devtools)
+library(knitr)   # for kable()
+```
 
 ```{r}
+message(".libPaths():")
+.libPaths()   # expect: a folder in conda env
+
+source("../config_global.txt")  # get ModelArray_commitSHA
+
+devtools::install_github(paste0("PennLINC/ModelArray@", ModelArray_commitSHA),
+                           upgrade = "never",   # not to upgrade package dependencies
+                           force=FALSE)   # force re-install ModelArray again or not
 library(ModelArray)
 ```
+```{r display csv file}
+# filename of example fixel data (.h5 file):
+csv_path <- "~/Desktop/myProject/cohort_FDC_n100.csv"
+# load the CSV file:
+phenotypes <- read.csv(csv_path)
+# let's check the first 6 rows:
+kable(head(phenotypes), format = "markdown")
+```
+
+
+```{r create ModelArray object}
+# filename of example fixel data (.h5 file):
+h5_path <- "~/Desktop/myProject/ltn_FDC_n100_demo.h5"
+# create a ModelArray-class object:
+modelarray <- ModelArray(h5_path, scalar_types = c("FDC")) 
+# let's check what's in it:
+modelarray 
+```
+
+```{r access slots}
+# scalar FDC data:
+scalars(modelarray)[["FDC"]]
+```
+
+```{r example lm}
+# formula:
+formula.lm <- FDC ~ Age + sex + dti64MeanRelRMS
+# run linear model fitting with ModelArray.lm() on the first 100 fixels:
+mylm.try <- ModelArray.lm(formula.lm, modelarray, phenotypes, "FDC",
+                          element.subset = 1:100)
+# let's check the first 6 rows of the results:
+head(mylm.try) %>% kable(format="markdown")
+```
+
 
 

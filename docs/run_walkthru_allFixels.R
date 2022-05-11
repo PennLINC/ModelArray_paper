@@ -38,6 +38,9 @@ message(paste0("number of cores = ", toString(num.cores)))
 message(paste0("output filename: ", filename_output_body))
 message(paste0("ModelArray commitSHA = ", commitSHA))
 
+message(".libPaths():")
+.libPaths()   # expect: a folder in conda env
+
 ## print ModelArray_paper's commitSHA:
 cmd <- "git rev-parse HEAD"
 message("ModelArray_paper commit SHA ($ git rev-parse HEAD): ")
@@ -153,7 +156,7 @@ if (flag_whichdataset == "test_n50") {
 } else if (flag_whichdataset == "josiane") {
   
   if (which_model == "lm") {
-    formula <- FDC ~ Age
+    formula <- FDC ~ Age + sex + dti64MeanRelRMS
     flag.full.outputs <- FALSE
     analysis_name <- "lm_default"
     
