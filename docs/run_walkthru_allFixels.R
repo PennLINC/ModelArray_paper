@@ -112,7 +112,7 @@ if (flag_whichdataset == "test_n50") {
   
 } else if (flag_whichdataset == "josiane") {
   if (flag_where == "vmware") {
-    fn <- paste0(folder.main, "/ltn_FDC_n", toString(num.subj), "_demo.h5")
+    fn <- paste0(folder.main, "/demo_FDC_n", toString(num.subj), ".h5")
     fn.output <- file.path(folder.main,
                            paste0(filename_output_body,".h5"))
     fn_csv <- paste0(folder.main, "/cohort_FDC_n", toString(num.subj), ".csv")
@@ -176,7 +176,7 @@ if (num.fixels == 0) {
 }
 element.subset <- 1:num.fixels  
 
-# print(formula)
+print(formula)
 
 toc(log=TRUE)    # pairing tic of "time before ModelArray.gam()"
 
@@ -187,7 +187,7 @@ tic("Running ModelArray.*()")
 if (which_model == "lm") {
   mymodel <- ModelArray.lm(formula, modelarray, phenotypes, scalar = scalar, element.subset = element.subset,
                               full.outputs = flag.full.outputs,  
-                              verbose = TRUE, pbar = FALSE, n_cores = num.cores)  # , na.action="na.fail"
+                              n_cores = num.cores)  # , na.action="na.fail"
   
   
   

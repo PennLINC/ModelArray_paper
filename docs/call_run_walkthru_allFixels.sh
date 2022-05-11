@@ -31,7 +31,7 @@ echo "which_model: $which_model"
 
 if [[  "$flag_where" == "vmware"  ]]; then
     folder_main="/home/chenying/Desktop/myProject"
-    filename_output="ltn_FDC_n${num_subj}_demo_wResults_nfixels-${num_fixels}_${date}"
+    filename_output="demo_FDC_n${num_subj}_wResults_nfixels-${num_fixels}_${date}"
 
 fi
 

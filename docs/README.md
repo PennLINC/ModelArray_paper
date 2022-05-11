@@ -9,6 +9,7 @@
     * chunk 1 and 3
 
 ## use ConFixel to convert data
+* IMPORTANT: before running, uninstall ConFixel, and install the latest version!
 * code: [confixel_to_h5_walkthru.sh](confixel_to_h5_walkthru.sh)
 
 ## run the walk-thru with all fixels

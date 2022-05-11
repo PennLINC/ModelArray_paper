@@ -36,7 +36,7 @@ kable(head(phenotypes), format = "markdown")
 
 ```{r create ModelArray object}
 # filename of example fixel data (.h5 file):
-h5_path <- "~/Desktop/myProject/ltn_FDC_n100_demo.h5"
+h5_path <- "~/Desktop/myProject/demo_FDC_n100.h5"
 # create a ModelArray-class object:
 modelarray <- ModelArray(h5_path, scalar_types = c("FDC")) 
 # let's check what's in it:
@@ -55,6 +55,7 @@ formula.lm <- FDC ~ Age + sex + dti64MeanRelRMS
 mylm.try <- ModelArray.lm(formula.lm, modelarray, phenotypes, "FDC",
                           element.subset = 1:100)
 # let's check the first 6 rows of the results:
+head(mylm.try)
 head(mylm.try) %>% kable(format="markdown")
 ```
 

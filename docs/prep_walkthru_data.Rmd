@@ -10,6 +10,7 @@ nsubj <- 100
 
 library(dplyr)
 library(testthat)
+library(openssl)
 set.seed(5)
 
 folder.demo <- "/home/chenying/Desktop/myProject"
@@ -94,35 +95,28 @@ expect_equal(strat_sample$bblid %>% unique() %>% length,
 write.csv(strat_sample, file = fn.strat.sample, row.names = FALSE)
 ```
 
-```{r change bblid to rbc id}
+```{r hash pnc bblid}
+source(file.path(folder.nottoshare,"key_for_hash_pnc.txt"))   # get "key_for_hash"
 strat_sample <- read.csv(fn.strat.sample)
 
-# load the lut for hashing bblid:
-fn.lut <- file.path(folder.nottoshare, "bblid_renamed.csv")
-lut <- read.csv(fn.lut)
-expect_equal(lut$reid %>% unique() %>% length,
-             nrow(lut))
+list.bblid <- strat_sample$bblid %>% as.character()   # change to character
 
-strat_sample$reid <- NA
-for (i in 1:nrow(strat_sample)) {
-  bblid <- strat_sample$bblid[i]
-  # find the corresponding value:
-  reid <- lut$reid[lut$bblid == bblid]
-  strat_sample$reid[i] <- reid
-}
+# sha256, using a key, and taking the first 7 characters:
+strat_sample$subject_id <- paste("sub-",
+                                 substr(sha256(list.bblid, key=key_for_hash), 1,7),
+                                 sep="")
 
-# test if the reid are unique:
-expect_equal(strat_sample$reid %>% unique() %>% length,
-             nrow(strat_sample))
+# check if they are unique:
+expect_equal(strat_sample$subject_id %>% unique() %>% length(),
+             nsubj)
 
-# create a new column: subject_id = subj-<reid>
-strat_sample <- strat_sample %>% mutate(subject_id = paste0("subj", reid))    
 # add the source_file column:
 strat_sample <- strat_sample %>% mutate(source_file = paste0("FDC/", subject_id, ".mif"))
 
 # only select the columns needed by the demo:
 csv.demo <- strat_sample %>% select(c("subject_id", "Age", "sex","dti64MeanRelRMS",
                                       "scalar_name","source_file"))
+
 # save:
 write.csv(csv.demo, file = fn.csv.demo, row.names = FALSE)
 # also update strat_sample with hashed id (overwrite it):
@@ -130,13 +124,11 @@ write.csv(strat_sample, file = fn.strat.sample, row.names = FALSE)
 ```
 
 
-
 ```{r copy input mif files}
-# TO BE UPDATED:
 # prepare walk-thru original data (before sending to ConFixel)
+# because the id has been changed, filename will also be changed when copying
 
-folder_main_to = "/home/chenying/Desktop/myProject"
-folder_to= file.path(folder_main_to, "FDC")
+folder_to= file.path(folder.demo, "FDC")
 folder_from="/home/chenying/Desktop/fixel_project/data/data_from_josiane/FDC/fdc_10_smoothed_10fwhm_new"
 
 dir.create(folder_to)
@@ -149,11 +141,17 @@ fn_from = file.path(folder_from, "directions.mif")
 file.copy(fn_from, folder_to)
 
 ## copy data into a folder
-# read in .csv file:
-csv <- read.csv(file.path(folder_main_to, paste0("cohort_FDC_n",toString(nsubj),".csv")))
-# list of files to copy:
-list.of.files.from <- paste(folder_from, "/sub-", csv$bblid, ".mif", sep="")
-# copy:
-file.copy(list.of.files.from, folder_to)  # expect: all true
+# read in .csv file that contains both bblid and hashed id:
+strat_sample <- read.csv(fn.strat.sample)
+expect_equal(strat_sample %>% nrow(),
+            nsubj)
+
+for (i in 1:nrow(strat_sample)) {
+  fn_from <- paste(folder_from, "/sub-", strat_sample$bblid[i], ".mif", sep="")
+  fn_to <- file.path(folder_to, 
+                     paste0(strat_sample$subject_id[i],".mif"))
+  expect_true(file.copy(fn_from, fn_to))   # copy, and expect it's true
+}
+
 
 ```

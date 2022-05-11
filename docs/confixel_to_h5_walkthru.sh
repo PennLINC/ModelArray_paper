@@ -16,7 +16,7 @@ cmd+=" --index-file FDC/index.mif"
 cmd+=" --directions-file FDC/directions.mif"
 cmd+=" --cohort-file cohort_FDC_n${nsubj}.csv"
 cmd+=" --relative-root /home/chenying/Desktop/myProject"  # this has to be a full path instead of "~/Desktop/myProject"
-cmd+=" --output-hdf5 ltn_FDC_n${nsubj}_demo.h5"
+cmd+=" --output-hdf5 demo_FDC_n${nsubj}.h5"
 
 echo $cmd
 $cmd

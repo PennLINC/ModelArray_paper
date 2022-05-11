@@ -17,7 +17,7 @@ date_h5="20220510-123027"
 analysis_name="lm_default"
 # ++++++++++++++++++++++++++++++++++++
 
-filename_h5_woext="ltn_FDC_n${nsubj}_demo_wResults_nfixels-0_${date_h5}"
+filename_h5_woext="demo_FDC_n${nsubj}_wResults_nfixels-0_${date_h5}"
 
 cmd="fixelstats_write"
 cmd+=" --index-file FDC/index.mif"
