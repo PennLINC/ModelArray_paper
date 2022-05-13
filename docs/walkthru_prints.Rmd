@@ -24,13 +24,20 @@ devtools::install_github(paste0("PennLINC/ModelArray@", ModelArray_commitSHA),
                            force=FALSE)   # force re-install ModelArray again or not
 library(ModelArray)
 ```
+
+
 ```{r display csv file}
 # filename of example fixel data (.h5 file):
 csv_path <- "~/Desktop/myProject/cohort_FDC_n100.csv"
 # load the CSV file:
 phenotypes <- read.csv(csv_path)
-# let's check the first 6 rows:
-kable(head(phenotypes), format = "markdown")
+# let's check the first 3 rows:
+head(phenotypes,4)
+kable(head(phenotypes,4), format = "markdown", 
+      align="c",    # align: center
+      digits=c(1, 2, 1, 6, 1, 1)) 
+min(phenotypes$Age)
+max(phenotypes$Age)
 ```
 
 
@@ -56,8 +63,23 @@ mylm.try <- ModelArray.lm(formula.lm, modelarray, phenotypes, "FDC",
                           element.subset = 1:100)
 # let's check the first 6 rows of the results:
 head(mylm.try)
-head(mylm.try) %>% kable(format="markdown")
+head(mylm.try) %>% kable(format = "markdown", 
+                        align="c")    # align: center
 ```
 
+
+```{r example gam}
+# formula:
+formula.gam <- FDC ~ s(Age, k=4) + sex + dti64MeanRelRMS
+# run GAM fitting with ModelArray.gam() on the first 100 fixels:
+mygam.try <- ModelArray.gam(formula.gam, modelarray, phenotypes, "FDC",
+                            element.subset = 1:100,
+                            correct.p.value.smoothTerms = c("fdr", "bonferroni"),
+                            correct.p.value.parametricTerms = c("fdr", "bonferroni"),
+                            method="REML")
+head(mygam.try)
+head(mygam.try) %>% kable(format = "markdown", 
+                          align="c")  # align: center
+```
 
 

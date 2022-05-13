@@ -158,13 +158,13 @@ if (flag_whichdataset == "test_n50") {
   if (which_model == "lm") {
     formula <- FDC ~ Age + sex + dti64MeanRelRMS
     flag.full.outputs <- FALSE
-    analysis_name <- "lm_default"
+    analysis_name <- "results_lm"
     
   } else if (which_model == "gam") {
     formula <- FDC ~ s(Age, k=4, fx = TRUE) + sex + dti64MeanRelRMS  # added motion quantification   # FD ~ s(age, k=4) + sex  # FD ~ s(age) + sex
     gam.method = "REML"   # "GCV.Cp", "REML"  # any other methods usually used?
     flag.full.outputs <- TRUE
-    analysis_name <- "gam_allOutputs"
+    analysis_name <- "results_gam_allOutputs"
     
   }
 
@@ -208,8 +208,11 @@ message("")
 message("head of results data frame:")
 head(mymodel)
 # write:
-
 writeResults(fn.output, df.output = mymodel, analysis_name=analysis_name, overwrite=TRUE)
+
+# # also write to a .csv file just in case...   # this is not a good idea; this .csv will take 4KB * 602229/10 = 200+MB
+# fn.output.csv <- gsub(".h5",".csv",fn.output)
+# write.csv(mymodel, file = fn.output.csv, row.names = FALSE)
 
 # read and see
 modelarray_new <- ModelArray(fn.output, scalar_types = scalar, analysis_names = analysis_name)
