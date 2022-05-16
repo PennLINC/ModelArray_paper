@@ -82,4 +82,16 @@ head(mygam.try) %>% kable(format = "markdown",
                           align="c")  # align: center
 ```
 
+```{r inside the full run results}
+date_fullrun <- "20220512-213911"
+h5_path_new <- paste0("~/Desktop/myProject/demo_FDC_n100_wResults_nfixels-0_",
+                      date_fullrun, ".h5")      # THIS IS FILENAME ONLY FOR PRINTING-OUT, NOT TO SHOW UP IN DEMO!
+modelarray_new <- ModelArray(filepath = h5_path_new, scalar_types = "FDC",
+                             analysis_names = c("results_lm"))
+modelarray_new
+message("DELETE _wResults_* before .h5!!!")
+```
 
+```{r}
+results(modelarray_new)[["results_lm"]]$results_matrix
+```

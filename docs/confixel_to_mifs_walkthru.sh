@@ -13,7 +13,7 @@ echo "current conda environment: ${current_conda_env}"
 
 # ++++++++++++++++++++++++++++++++++++
 nsubj=100
-date_h5="20220511-183121"
+date_h5="20220512-213911"
 analysis_name="results_lm"
 # ++++++++++++++++++++++++++++++++++++
 
