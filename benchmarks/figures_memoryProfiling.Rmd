@@ -3,7 +3,7 @@ title: "figures for memory profiling"
 output: html_document
 ---
 
-```{r}
+```{r, include=FALSE}
 # , include = FALSE
 
 rm(list=ls())
@@ -21,7 +21,10 @@ list.of.packages <- c(#"readxl",  # reading xlsx
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 
-lapply(list.of.packages, require, character.only = TRUE)   # or library
+load.packages.success <- lapply(list.of.packages, require, character.only = TRUE)   # or library
+if (all(load.packages.success) == FALSE) {
+  error("error when loading the dependent packages!")
+}
 
 source("memoryProfiling_plot.R")
 ```
@@ -436,7 +439,10 @@ plotGen_modelarray_diffncores <- function(clean.summary.when.max_modelarray,
   }
   
   if (flag_title == TRUE) {
-    f <- f + ggtitle(paste0("ModelArray.lm(): Nsubj = ", toString(nsubj)))
+    #f <- f + ggtitle(paste0("ModelArray.lm(): Nsubj = ", toString(nsubj)))
+    f <- f + ggtitle(paste0("n = ", toString(nsubj))) +
+            theme(plot.title = element_text(hjust = 0.5))   # title at center
+    
   }
   
   return(f)
@@ -777,7 +783,7 @@ f_modelarray <- vector("list", length = 2)  # create an empty list
 f_modelarray[[1]] <- plotGen_modelarray_diffncores(clean.summary.when.max_modelarray, totals_modelarray, 
                                               nsubj = nsubj, roof.num.child = roof.num.child,
                                               flag_legend_order_reverse, color_parent_process, color_children_process,
-                                              ylim = ylim_modelarray, flag_title=FALSE)
+                                              ylim = ylim_modelarray, flag_title=TRUE)
 
 f_modelarray[[1]]
 
@@ -827,7 +833,7 @@ totals_mrtrix
 f_modelarray[[2]] <- plotGen_modelarray_diffncores(clean.summary.when.max_modelarray, totals_modelarray, 
                                               nsubj = nsubj, roof.num.child = roof.num.child,
                                               flag_legend_order_reverse, color_parent_process, color_children_process,
-                                              ylim = ylim_modelarray, flag_ylab = FALSE, flag_title=FALSE)
+                                              ylim = ylim_modelarray, flag_ylab = FALSE, flag_title=TRUE)
 
 f_modelarray[[2]]
 
