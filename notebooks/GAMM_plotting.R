@@ -16,8 +16,20 @@ ylabel=NULL, # y axis label
 
 You can plot the derivative using derivative_plot=TRUE
 
+Return: a list: (after revision by Chenying):
+* final_plot: the plot
+* pred: the data.frame that is used for plotting the fitted line and se boundaries
+
 UNDER THE HOOD: - Chenying's notes:
-- using the fitted gam model to predict the values to plot (middle line, se's boundary), but not to re-fit it (except for derivatives)
+* The scatter plot is the original data points;
+* The fitted line + se's boundary: 
+  * Using the fitted gam model to predict the values to plot (middle line, se's boundary), but not to re-fit it (except for derivatives)
+  * The x values: a range of x variable (e.g., age)
+  * If there are covariates: will use a fixed value for these covariates for these fitted dots
+    * If numeric, takes median()
+    * If categorical (factor or ordered), takes one of the levels (e.g., the first level)
+    * If integer, takes one of the integer (for sex of 1 and 2, takes the one with more participants) (we actually can use either level)
+  * CAVEATS: This plotting isn't ideal when you have a large effect of of a categorical variable, but you are not setting argument `int_var`. In that case, the fitted line is not capturing the other half of the data points well.
 "
 
 ## Load libraries
@@ -492,5 +504,10 @@ visualize_model <- function(modobj,
                 a.hist = list(bins = 10))
     print(cp)
   }
-  return(final_plot)
+  
+  
+  toreturn <- list(final_plot = final_plot,
+                   pred = pred)  # this is added by Chenying: the predictions for drawing the fitted lines
+  #return(final_plot)
+  return(toreturn)
 }

@@ -305,7 +305,10 @@ plot_oneFixel <- function(modelarray, fixel_id, scalar_name,
   
   #f <- vis.gam(onemodel)
     
-  f <- visualize_model(onemodel, smooth_var = 'Age')
+  #f <- visualize_model(onemodel, smooth_var = 'Age')
+  temp <- visualize_model(onemodel, smooth_var = 'Age')
+  f <- temp$final_plot
+  pred <- temp$pred   # the predicted values for drawing the fitted lines and se ranges
   
   ## below: tried but there is an offset in y (Bart: y is centered at 0)
   #f <- gratia::draw(onemodel, select = "s(Age)", residuals=TRUE, rug = FALSE)   # rug is at the bottom - for displaying the data density on x-axis
@@ -315,7 +318,8 @@ plot_oneFixel <- function(modelarray, fixel_id, scalar_name,
     return(f)
   } else {
     results = list(f = f,
-                   onemodel = onemodel)
+                   onemodel = onemodel,
+                   pred = pred)
     return(results)
   }
   
@@ -335,7 +339,9 @@ results <- plot_oneFixel(modelarray=NULL, NULL, scalar_name,
                          phenotypes = phenotypes, dat=df_avgFixel, return_else = TRUE)
 f_avgFixel_orig <- results$f
 onemodel_avgFixel <- results$onemodel
+pred_avgFixel <- results$pred
 
+# tidy up the stat:
 onemodel_avgFixel.summary <- summary(onemodel_avgFixel)
 onemodel_avgFixel.smoothTerm <- broom::tidy(onemodel_avgFixel, parametric=FALSE)
 onemodel_avgFixel.parametricTerm <- broom::tidy(onemodel_avgFixel, parametric=TRUE) 
@@ -418,6 +424,5 @@ for (ext_figure in list_ext_figure) {
                    paste0("figure_gam_showcase_abs.", ext_figure) ),
          plot = p_avgFixel_abs, device = ext_figure, dpi = 300, width = final_width, height = final_height, units = "mm")   # 
 }
-# NOTE: as there is more sex=2 than sex=1, and sex is numeric, so the median(df[,sex]) = 2, the gam curve is fitted upon sex=2, i.e. female (2)
-# TODO: check how many fixels' model: sex is significant
+
 ```
