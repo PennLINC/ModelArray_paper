@@ -11,6 +11,7 @@ This folder is for several notebooks:
         * [showCase_ModelArray.gam.R](showCase_ModelArray.gam.R)
     * extract the significant fixels and plot: see notes in below .Rmd for how to run
         * [analyze_signi_cluster.Rmd](analyze_signi_cluster.Rmd)
+            * This uses GAM plotting function from [GAMM_plotting.R](GAMM_plotting.R)
         * [analyze_signi_cluster.py](analyze_signi_cluster.py)
     
 

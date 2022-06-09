@@ -3,8 +3,6 @@
 library(testthat)
 
 ### prepare input dataset: #####
-# TODO: check ltn_FDC_n938.csv == df_example_n938.csv
-
 fn.ltn.csv <- "/cbica/projects/fixel_db/dropbox/data_from_josiane/ltn_FDC_n938.csv"
 ltn.csv <- read.csv(fn.ltn.csv)
 

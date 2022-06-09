@@ -3,12 +3,12 @@ This is the README file for benchmarking ModelArray.
 # Run memory benchmarking
 ## setup
 * Linux system
-* Download WSS Tools
+* Download [WSS Tools](https://github.com/brendangregg/wss)
 
 ## scripts
 * Core script for memory profiling: [myMemoryProfiler.sh](myMemoryProfiler.sh)
     * This is to profile memory usage of a process and its child(ren)
-    * This uses WSS Tools
+    * This uses [WSS Tools](https://github.com/brendangregg/wss)
 * The R script used for memory profiling ModelArray:
     * [memoryProfiling_ModelArray.lm.R](memoryProfiling_ModelArray.lm.R)
     * this requires a ModelArray commit SHA in [config.txt](config.txt)

@@ -166,7 +166,6 @@ toc(log=TRUE)    # pairing tic of "time before ModelArray.gam()"
 
 ### running on real data #####
 tic("Running ModelArray.gam()")
-# +++++++++++++++ optional: NEXT TIME: sex --> ordered factor, and use oSex in formula! (this may make the plots - e.g. Bart's function more making sense? as there will be a reference level of female or male)++++++++++++++++++++++++++
 gam_real <- ModelArray.gam(formula = formula, data = fixelarray, phenotypes = phenotypes, scalar = scalar, 
                            element.subset = element.subset, full.outputs = TRUE,
                            changed.rsq.term.index = c(1),
