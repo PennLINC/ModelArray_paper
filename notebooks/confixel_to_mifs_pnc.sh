@@ -3,10 +3,9 @@
 # make sure the conda env is correct:
 # conda activate test_confixel   # <- only do this when running on Chenying's local vmware!
 
-# also temporarily change folder "for_fixelcfestats" as "FDC"
 
 # ++++++++++++++++++++++++++++++++++++
-filename_h5_woext="ltn_FDC_n938_wResults_nfixels-0_20220204-140019"
+filename_h5_woext="ltn_FDC_n938_wResults_nfixels-0_20220109-183909"
 # ++++++++++++++++++++++++++++++++++++
 
 cmd="fixelstats_write"
