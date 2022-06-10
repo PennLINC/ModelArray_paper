@@ -1,0 +1,53 @@
+---
+title: "prepare data"
+author: "Chenying Zhao"
+output: html_document
+---
+
+```{r}
+rm(list=ls())
+
+library(ModelArray)
+
+suppressMessages(library(dplyr))
+library(broom)
+library(dplyr)
+library(rhdf5)
+library(hdf5r)
+library(tictoc)
+library(testthat)
+
+```
+
+
+```{r}
+h5closeAll()
+
+flag_where <- "vmware"  # "vmware" or "cubic"
+if (flag_where == "vmware") {
+  folder_josiane <- "/home/chenying/Desktop/fixel_project/data/data_from_josiane"
+} else if (flag_where == "cubic") {
+  folder_josiane <- "/cbica/projects/fixel_db/dropbox/data_from_josiane"  
+}
+
+```
+
+## Save the .csv files with different number of subjects
+This .csv file will be used by both ConFixel and ModelArray
+```{r}
+list_num_subj <- c(30,100,300,500,750)
+df_example <- read.csv(paste0(folder_josiane, "/", "df_example_n938.csv"))
+
+for (num_subj in list_num_subj) {
+  message(paste0("number of subjects = ",toString(num_subj)))
+  
+  fn.csv.new <- paste0(folder_josiane,"/","df_example_n",toString(num_subj), ".csv")
+  df.new <- df_example[1:num_subj,]
+  
+  write.csv(df.new, file = fn.csv.new, row.names = FALSE)
+  
+}
+
+```
+
+

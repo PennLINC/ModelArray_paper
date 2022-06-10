@@ -10,7 +10,7 @@ cmd+=" --index-file index_and_directions_files/index.mif"
 cmd+=" --directions-file index_and_directions_files/directions.mif"
 cmd+=" --cohort-file df_example_n${nsubj}.csv"
 cmd+=" --relative-root /home/chenying/Desktop/fixel_project/data/data_from_josiane"
-cmd+=" --output-hdf5 ltn_FDC_n${nsubj}_confixel.h5"
+cmd+=" --output-hdf5 ltn_FDC_n${nsubj}.h5"
 
 echo $cmd
 $cmd
