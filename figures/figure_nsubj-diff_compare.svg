@@ -301,7 +301,7 @@
 <text x='182.41' y='332.03' text-anchor='middle' style='font-size: 7.20px;fill: #4D4D4D; font-family: "Arial";' textLength='11.99px' lengthAdjust='spacingAndGlyphs'>500</text>
 <text x='246.32' y='332.03' text-anchor='middle' style='font-size: 7.20px;fill: #4D4D4D; font-family: "Arial";' textLength='11.99px' lengthAdjust='spacingAndGlyphs'>750</text>
 <text x='294.38' y='332.03' text-anchor='middle' style='font-size: 7.20px;fill: #4D4D4D; font-family: "Arial";' textLength='11.99px' lengthAdjust='spacingAndGlyphs'>938</text>
-<text x='178.32' y='342.71' text-anchor='middle' style='font-size: 9.00px; font-family: "Arial";' textLength='77.52px' lengthAdjust='spacingAndGlyphs'>Number of subjects</text>
+<text x='178.32' y='342.71' text-anchor='middle' style='font-size: 9.00px; font-family: "Arial";' textLength='90.52px' lengthAdjust='spacingAndGlyphs'>Number of participants</text>
 <text transform='translate(19.04,251.08) rotate(-90)' text-anchor='middle' style='font-size: 9.00px; font-family: "Arial";' textLength='73.48px' lengthAdjust='spacingAndGlyphs'>Max memory (GB)</text>
 <text x='8.99' y='179.08' text-anchor='middle' style='font-size: 10.80px; font-family: "Arial";' textLength='7.20px' lengthAdjust='spacingAndGlyphs'>B</text>
 </g>

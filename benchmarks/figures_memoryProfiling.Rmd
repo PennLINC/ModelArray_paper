@@ -37,7 +37,7 @@ source("memoryProfiling_plot.R")
 #'  MAsha is as expected (i.e. as argument MAsha)
 #' (not to test MAPsha anymore)
 #'  If all conditions are unique
-#'  The folder names match the condition (number of cores, number of subject)
+#'  The folder names match the condition (number of cores, number of participant)
 #'  All foldernames (across condition and repeats) are unique
 #'  Number of shuffles is as expected (i.e. as argument nshuffles, for MRtrix only) --> all the same
 #' @param t table loaded from .csv file
@@ -556,7 +556,7 @@ plotGen_modelarray_diffsubj <- function(clean.summary.when.max_modelarray, total
                 ylab("Max memory (GB)")
                 
   if (flag_xlab == TRUE) {
-    f <- f +  xlab("Number of subjects") 
+    f <- f +  xlab("Number of participants") 
   } else {
     f <- f+ xlab(NULL)
   }
@@ -591,7 +591,7 @@ plotGen_mrtrix_diffsubj <- function(totals_mrtrix, ncpus,
                     text = element_text(size=fontsize_theme, family="Arial"),
                     legend.key.size = unit(theme.legend.key.size_value, theme.legend.key.size_unit),
                     legend.spacing.x = unit(theme.legend.spacing.x_value, theme.legend.spacing.x_unit))+
-              xlab("Number of subjects") +
+              xlab("Number of participants") +
               ylab("Max memory (GB)") +
               ggtitle(paste0("MRtrix fixelcfestats: Nthreads = ", toString(ncpus)))
   
@@ -652,7 +652,7 @@ plotGen_compare_diffsubj <- function(totals_modelarray, totals_mrtrix, ncpus,
                       legend.position = theme.legend.position,
                       legend.key.size = unit(theme.legend.key.size_value, theme.legend.key.size_unit),
                       legend.spacing.x = unit(theme.legend.spacing.x_value, theme.legend.spacing.x_unit)) +
-                xlab("Number of subjects")
+                xlab("Number of participants")
                 
   
   if (class(theme.legend.position) == "numeric") {  # if within the plot
@@ -746,7 +746,7 @@ rough.total.time.sec.mrtrix <- out_mrtrix$rough.total.time.sec
 t_mrtrix$rough.total.time.sec <- rough.total.time.sec.mrtrix 
 ```
 
-## number of subject = 30, different number of CPU cores (threads)
+## number of participant = 30, different number of CPU cores (threads)
 ```{r}
 nsubj = 30
 roof.num.child = 4
@@ -799,7 +799,7 @@ f_compare[[1]]
 
 ```
 
-## number of subject = 938, different number of CPU cores (threads)
+## number of participant = 938, different number of CPU cores (threads)
 ```{r}
 nsubj = 938
 roof.num.child = 4
@@ -871,7 +871,7 @@ for (ext_figure in list_ext_figure) {
 
 ```
 
-## number of cores (threads) = 4, different number of subjects
+## number of cores (threads) = 4, different number of participants
 ```{r}
 ncpus = 4
 flag_legend_order_reverse <- FALSE    # when legend is at the bottom, use "TRUE"
