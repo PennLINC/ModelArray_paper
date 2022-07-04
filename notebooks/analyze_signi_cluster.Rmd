@@ -173,7 +173,7 @@ main.folder.figures <- "/home/chenying/Desktop/fixel_project/ModelArray_paper/fi
 ```{r load the data, echo=FALSE}
 folder.h5.results <- gsub(".h5", "", fn.h5.results, fixed=TRUE)
 modelarray <- ModelArray(fn.h5.results, scalar_types = scalar_name, analysis_names = analysis_name)
-print(paste0("object size of modelarray = ", object.size(modelarray)/1024, " kilobytes"))   # default object.size() is bytes
+#print(paste0("object size of modelarray = ", object.size(modelarray)/1024, " kilobytes"))   # default object.size() is bytes
 
 num_fixel_total <- numElementsTotal(modelarray, scalar_name = "FDC")
 if (num.subj != modelarray@sources[[scalar_name]] %>% length()) {
@@ -403,13 +403,8 @@ final_width <- 90
 final_height <- 85
 
 list_ext_figure <- c("jpeg", "svg")
-for (ext_figure in list_ext_figure) {
-  ggsave(file.path(main.folder.figures,
-                   paste0("figure_gam_showcase_panelB.", ext_figure) ),
-         plot = p_avgFixel, device = ext_figure, dpi = 300, width = final_width, height = final_height, units = "mm")   # 
-}
 
-### save the figure - for graphic abstract:
+### save the figure:
 f_avgFixel_abs <- f_avgFixel_orig + 
                     # geom_text(x=x, y=y, size = fontsize_text, family = "Arial", label=label_text) + 
                     theme_classic() +
