@@ -43,6 +43,11 @@ system(cmd)
 
 ## install ModelArray:
 
+message(".libPaths():")
+.libPaths()
+message(" ")
+
+
 if (flag_library_what == "automatically") {
   message("Please make sure that github repository 'ModelArray' has been updated: local files have been pushed! And commitSHA is up-to-date!")
   message("run: devtools::install_github() to install ModelArray package")
@@ -168,7 +173,7 @@ toc(log=TRUE)    # pairing tic of "time before ModelArray.gam()"
 tic("Running ModelArray.gam()")
 gam_real <- ModelArray.gam(formula = formula, data = fixelarray, phenotypes = phenotypes, scalar = scalar, 
                            element.subset = element.subset, full.outputs = TRUE,
-                           changed.rsq.term.index = c(1),
+                           eff.size.term.index = c(1),
                            correct.p.value.smoothTerms = c("fdr", "bonferroni"),
                            correct.p.value.parametricTerms = c("fdr", "bonferroni"),
                            n_cores=num.cores, pbar = TRUE,
@@ -187,8 +192,6 @@ fixelarray_new <- ModelArray(fn.output, scalar_types = scalar, analysis_names = 
 message("after saving to .h5:")
 fixelarray_new@results$gam_allOutputs
 
-message("after saving to .h5, head of gam_real:")
-head(gam_real)
 # 
 # message("dimension of gam_real:")
 # dim(gam_real)
