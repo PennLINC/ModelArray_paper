@@ -16,8 +16,10 @@ num.subj <- as.integer(args[3])
 num.cores <- as.integer(args[4])
 ModelArray_commitSHA <- as.character(args[5])   # github commit SHA for installing ModelArray
 ModelArrayPaper_commitSHA <- as.character(args[6])  # record for commit SHA for ModelArray_paper
+flag_library_what <- as.character(args[7])   # "automatically" or "use_installed" (i.e. not to install again) or "manually"
+flag_where <- as.character(args[8])   # "sge" or "interactive" or "vmware" or "dopamine"
+copy_index_char <- as.character(args[9])    # e.g., 1-10, in case it is run in parallel; 0: only 1 copy and use it
 
-flag_library_what <- "automatically"   # "automatically" or "manually"
 # TODO: different variables and formula!
 
 # checkers:
@@ -26,14 +28,16 @@ message(paste0("number of fixels = "), toString(num.fixels))
 message(paste0("number of subjects = "), toString(num.subj))
 message(paste0("number of cores = "), toString(num.cores))
 message(paste0("ModelArray_paper's commitSHA = ", ModelArrayPaper_commitSHA))
+message(paste0("how to install ModelArray = ", flag_library_what))
+message(paste0("where we are = ", flag_where))
+message(paste0("will use h5 file copy #",copy_index_char, " (if 0: using default copy)"))
 # message(paste0("class of arguments: ",class(flag_whichdataset), "; ", class(num.fixels), "; ", class(num.subj), "; ", class(num.cores)))
 
 
 
 
 ### basics #####
-flag_where <- "vmware"   # "CUBIC" or "vmware"
-if (flag_where =="CUBIC") {
+if (flag_where %in% c("sge", "interactive")) {
   setwd("/cbica/projects/fixel_db/ModelArray_paper/benchmarks")
 
 } else if (flag_where == "vmware") {
@@ -41,7 +45,11 @@ if (flag_where =="CUBIC") {
   setwd("/home/chenying/Desktop/fixel_project/ModelArray_paper/benchmarks")
 }
 
-if (flag_library_what == "automatically") {
+if (flag_library_what == "use_installed") {
+  # directly use ModelArray installed (e.g., in the singularity image), and not to install again
+  library(ModelArray)
+  
+} else if (flag_library_what == "automatically") {
   message("Please make sure that github repository 'ModelArray' has been updated: local files have been pushed! And commitSHA is up-to-date!")
   message("run: devtools::install_github() to install ModelArray package")
   library(devtools)
@@ -72,7 +80,13 @@ if (flag_library_what == "automatically") {
 }
 
 
-# save the config in R:
+## save the config in R:
+message(" ")
+message("devtools::package_info() as below:")
+# print the SHA of ModelArray:
+devtools::package_info("ModelArray")    # actually, will be a entire list of the packages...
+message(" ")
+
 message("sessionInfo() as below:")
 sessionInfo()  # including R versoin, attached packages version
 message(" ")
@@ -90,7 +104,7 @@ flag_which_subset <- ""
 if (flag_whichdataset == "test_n50") {
   fn <- "../inst/extdata/n50_fixels.h5"
 
-  if (flag_where == "CUBIC") {
+  if ( flag_where %in% c("sge", "interactive") ) {
     fn.output <- "../../dropbox/data_forCircleCI_n50/n50_fixels_output.h5"
   } else if (flag_where == "vmware") {
     fn.output <- "../../data/data_forCircleCI_n50/n50_fixels_output.h5"  # absolute path: "/home/chenying/Desktop/fixel_project/data/data_forCircleCI_n50/n50_fixels_output.h5"
@@ -101,10 +115,11 @@ if (flag_whichdataset == "test_n50") {
   scalar = c("FD")
 
 } else if (flag_whichdataset == "josiane") {
-  if (flag_where == "CUBIC") {
-    fn <- paste0("../../dropbox/data_from_josiane/ltn_FDC_n", toString(num.subj), ".h5")
+  if ( flag_where %in% c("sge", "interactive") ) {
+    fn <- paste0("../../dropbox/data_from_josiane/ltn_FDC_n", toString(num.subj), "_copy", copy_index_char,".h5")   # in case it is run in parallel
     fn.output <- fn  # same as input (to avoid copying)
     fn_csv <- paste0("../../dropbox/data_from_josiane/df_example_n", toString(num.subj), ".csv")
+    
   } else if (flag_where == "vmware") {
     fn <- paste0("../../data/data_from_josiane/ltn_FDC_n", toString(num.subj), ".h5")
     fn.output <- fn  # same as input (to avoid copying)
