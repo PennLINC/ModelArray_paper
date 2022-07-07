@@ -116,9 +116,9 @@ if (flag_whichdataset == "test_n50") {
 
 } else if (flag_whichdataset == "josiane") {
   if ( flag_where %in% c("sge", "interactive") ) {
-    fn <- paste0("../../dropbox/data_from_josiane/ltn_FDC_n", toString(num.subj), "_copy", copy_index_char,".h5")   # in case it is run in parallel
+    fn <- paste0("../../data/data_from_josiane/ltn_FDC_n", toString(num.subj), "_copy", copy_index_char,".h5")   # in case it is run in parallel
     fn.output <- fn  # same as input (to avoid copying)
-    fn_csv <- paste0("../../dropbox/data_from_josiane/df_example_n", toString(num.subj), ".csv")
+    fn_csv <- paste0("../../data/data_from_josiane/df_example_n", toString(num.subj), ".csv")
     
   } else if (flag_where == "vmware") {
     fn <- paste0("../../data/data_from_josiane/ltn_FDC_n", toString(num.subj), ".h5")

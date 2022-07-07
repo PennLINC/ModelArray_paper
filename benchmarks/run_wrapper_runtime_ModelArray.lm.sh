@@ -8,7 +8,19 @@
 # `-s 1` will not be used
 
 
+while getopts f:S:c:P: flag
+do
+        case "${flag}" in
+                f) num_fixels=${OPTARG};;   # 0 as full
+                S) num_subj=${OPTARG};;
+                c) num_cores=${OPTARG};;
+                P) copy_index=${OPTARG};;  # e.g., integer 1-10, in case it is run in parallel; 0: only 1 copy and use it
+        esac
+done
 
-main_cmd="bash wrapper_benchmark_ModelArray.lm.sh -s 1 -D josiane -f 10 -S 30 -c 4 -w sge -M FALSE -I FALSE"
 
-cmd="${main_cmd} -P 1"
+main_cmd="bash wrapper_benchmark_ModelArray.lm.sh -s 1 -D josiane -f ${num_fixels} -S ${num_subj} -c ${num_cores} -w sge -O FALSE -M FALSE -I FALSE"
+
+cmd="${main_cmd} -P ${copy_index}"
+echo $cmd
+$cmd
