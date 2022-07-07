@@ -7,7 +7,7 @@
 
 source ../benchmarks/config.txt  # flag_where and ModelArray_commitSHA
 
-while getopts s:D:f:S:c:w:O:M: flag
+while getopts s:D:f:S:c:w:O:M:I:P: flag
 do
         case "${flag}" in
                 s) sample_sec=${OPTARG};;
@@ -19,6 +19,8 @@ do
                 w) run_where=${OPTARG};;    # "sge" or "interactive" or "vmware"
                 O) overwrite=${OPTARG};;   # "TRUE"
                 M) run_memoryProfiler=${OPTARG};;   # "TRUE" or "FALSE"
+                I) flag_to_install=${OPTARG};;    # TRUE (to explicitly install ModelArray) or FALSE (not to install and use the installed ModelArray)
+                P) copy_index=${OPTARG};;  # e.g., integer 1-10, in case it is run in parallel; 0: only 1 copy and use it
         esac
 done
 
@@ -47,8 +49,9 @@ foldername_jobid="${foldername_jobid}.s-${sample_sec}sec"
 if [  "$run_where" = "sge" ]; then
         folder_benchmark="/cbica/projects/fixel_db/FixelArray_benchmark"
         
-        echo "adding JOB_ID to foldername"
-        foldername_jobid="${foldername_jobid}.${JOB_ID}"
+        echo "adding date & JOB_ID to foldername"
+        foldername_jobid="${foldername_jobid}.${date}.job${JOB_ID}"
+
 
 elif [[ "$run_where" == "interactive"   ]]; then
         folder_benchmark="/cbica/projects/fixel_db/FixelArray_benchmark"
@@ -80,4 +83,4 @@ fn_output_txt="${folder_jobid}/output.txt"
 # for memrec:
 # bash benchmark_ModelArray.lm.sh -d $d_memrec -D $dataset_name -f $num_fixels -s $num_subj -c $num_cores -w $run_where -o ${folder_jobid} > $fn_output_txt 2>&1
 # for wss:
-bash benchmark_ModelArray.lm.sh -s $sample_sec -D $dataset_name -f $num_fixels -S $num_subj -c $num_cores -w $run_where -o ${folder_jobid} -M ${run_memoryProfiler} -A ${ModelArray_commitSHA} -a ${ModelArrayPaper_commitSHA} > $fn_output_txt 2>&1
+bash benchmark_ModelArray.lm.sh -s $sample_sec -D $dataset_name -f $num_fixels -S $num_subj -c $num_cores -w $run_where -o ${folder_jobid} -M ${run_memoryProfiler} -A ${ModelArray_commitSHA} -a ${ModelArrayPaper_commitSHA} -I ${flag_to_install} > $fn_output_txt 2>&1

@@ -18,3 +18,8 @@ echo $cmd
 cmd="docker push '${dockerhub_accountname}/${gear_name}:${gear_tag}'"
 echo $cmd
 #$cmd
+
+## after pushing to DockerHub, pulling it on the cluster:
+# cd ~
+cmd="singularity pull docker://${dockerhub_accountname}/${gear_name}:${gear_tag}"
+echo $cmd

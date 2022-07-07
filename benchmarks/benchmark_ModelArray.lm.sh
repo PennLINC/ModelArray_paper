@@ -1,6 +1,6 @@
 #!/bin/bash
 
-while getopts s:D:f:S:c:w:o:M:A:a: flag
+while getopts s:D:f:S:c:w:o:M:A:a:I:P: flag
 do
 	case "${flag}" in
 		s) sample_sec=${OPTARG};;   # for wss.pl
@@ -14,6 +14,8 @@ do
 		M) run_memoryProfiler=${OPTARG};;   # TRUE or FALSE
 		A) ModelArray_commitSHA=${OPTARG};;
 		a) ModelArrayPaper_commitSHA=${OPTARG};;
+		I) flag_to_install=${OPTARG};;    # TRUE (to explicitly install ModelArray) or FALSE (not to install and use the installed ModelArray)
+		P) copy_index=${OPTARG};;  # e.g., integer 1-10, in case it is run in parallel; 0: only 1 copy and use it
 	esac
 done
 
@@ -28,6 +30,16 @@ echo "num_subj: $num_subj"
 echo "num_cores: $num_cores"
 echo "run_where: $run_where"
 echo "output_folder: $output_folder"
+echo "flag_to_install: ${flag_to_install}"
+echo "copy_index: ${copy_index}"
+
+if [[  "$flag_to_install" == "TRUE" ]]; then
+	# to explicitly install ModelArray:
+	flag_library_what="automatically"
+elif [[  "$flag_to_install" == "FALSE" ]]; then
+	# not to install again, and use the installed ModelArray:
+	flag_library_what="use_installed"
+fi
 
 
 #singularity instance start -e -B $TMPDIR:/var -B $HOME:/root    /cbica/projects/fixel_db/myr_r4.1.0forModelArray.sif myr_r4.1.0forModelArray
@@ -62,9 +74,9 @@ echo ""
 # $cmd
 
 if [[  "$run_where" == "vmware"   ]]; then
-	cmd="Rscript ./memoryProfiling_ModelArray.lm.R $dataset_name $num_fixels $num_subj $num_cores ${ModelArray_commitSHA} ${ModelArrayPaper_commitSHA} > ${fn_R_output}  2>&1 &"
+	cmd="Rscript ./memoryProfiling_ModelArray.lm.R $dataset_name $num_fixels $num_subj $num_cores ${ModelArray_commitSHA} ${ModelArrayPaper_commitSHA} ${flag_library_what} ${run_where} ${copy_index} > ${fn_R_output}  2>&1 &"
 	echo $cmd
-	Rscript ./memoryProfiling_ModelArray.lm.R $dataset_name $num_fixels $num_subj $num_cores ${ModelArray_commitSHA} ${ModelArrayPaper_commitSHA} > ${fn_R_output}  2>&1 &     # cannot run at background if using $cmd to execuate..
+	Rscript ./memoryProfiling_ModelArray.lm.R $dataset_name $num_fixels $num_subj $num_cores ${ModelArray_commitSHA} ${ModelArrayPaper_commitSHA} ${flag_library_what} ${run_where} ${copy_index} > ${fn_R_output}  2>&1 &     # cannot run at background if using $cmd to execuate..
 
 	parent_id=$!  # get the pid of last execuated command
 
@@ -72,9 +84,9 @@ elif [[ "$run_where" == "sge"  ]] || [[ "$run_where" == "interactive"   ]]; then
 	fn_sif="/cbica/projects/fixel_db/modelarray_SHA0911c4f_v1.sif"
 	fn_R_benchmark="/cbica/projects/fixel_db/ModelArray_paper/benchmarks/memoryProfiling_ModelArray.lm.R"
 
-	cmd="singularity run --cleanenv ${fn_sif} Rscript ${fn_R_benchmark} $dataset_name $num_fixels $num_subj $num_cores ${ModelArray_commitSHA} ${ModelArrayPaper_commitSHA} > ${fn_R_output}  2>&1"
+	cmd="singularity run --cleanenv ${fn_sif} Rscript ${fn_R_benchmark} $dataset_name $num_fixels $num_subj $num_cores ${ModelArray_commitSHA} ${ModelArrayPaper_commitSHA} ${flag_library_what} ${run_where} ${copy_index} > ${fn_R_output}  2>&1"
 	echo $cmd
-	singularity run --cleanenv ${fn_sif} Rscript ${fn_R_benchmark} $dataset_name $num_fixels $num_subj $num_cores ${ModelArray_commitSHA} ${ModelArrayPaper_commitSHA} > ${fn_R_output}  2>&1
+	singularity run --cleanenv ${fn_sif} Rscript ${fn_R_benchmark} $dataset_name $num_fixels $num_subj $num_cores ${ModelArray_commitSHA} ${ModelArrayPaper_commitSHA} ${flag_library_what} ${run_where} ${copy_index} > ${fn_R_output}  2>&1
 
 	parent_id=$!  # get the pid of last execuated command
 fi
