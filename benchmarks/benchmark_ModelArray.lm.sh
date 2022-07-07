@@ -61,11 +61,23 @@ echo ""
 # echo $cmd
 # $cmd
 
-cmd="Rscript ./memoryProfiling_ModelArray.lm.R $dataset_name $num_fixels $num_subj $num_cores ${ModelArray_commitSHA} ${ModelArrayPaper_commitSHA} > ${fn_R_output}  2>&1 &"
-echo $cmd
-Rscript ./memoryProfiling_ModelArray.lm.R $dataset_name $num_fixels $num_subj $num_cores ${ModelArray_commitSHA} ${ModelArrayPaper_commitSHA} > ${fn_R_output}  2>&1 &     # cannot run at background if using $cmd to execuate..
+if [[  "$run_where" == "vmware"   ]]; then
+	cmd="Rscript ./memoryProfiling_ModelArray.lm.R $dataset_name $num_fixels $num_subj $num_cores ${ModelArray_commitSHA} ${ModelArrayPaper_commitSHA} > ${fn_R_output}  2>&1 &"
+	echo $cmd
+	Rscript ./memoryProfiling_ModelArray.lm.R $dataset_name $num_fixels $num_subj $num_cores ${ModelArray_commitSHA} ${ModelArrayPaper_commitSHA} > ${fn_R_output}  2>&1 &     # cannot run at background if using $cmd to execuate..
 
-parent_id=$!  # get the pid of last execuated command
+	parent_id=$!  # get the pid of last execuated command
+
+elif [[ "$run_where" == "sge"  ]] || [[ "$run_where" == "interactive"   ]]; then
+	fn_sif="/cbica/projects/fixel_db/modelarray_SHA0911c4f_v1.sif"
+	fn_R_benchmark="/cbica/projects/fixel_db/ModelArray_paper/benchmarks/memoryProfiling_ModelArray.lm.R"
+
+	cmd="singularity run --cleanenv ${fn_sif} Rscript ${fn_R_benchmark} $dataset_name $num_fixels $num_subj $num_cores ${ModelArray_commitSHA} ${ModelArrayPaper_commitSHA} > ${fn_R_output}  2>&1"
+	echo $cmd
+	singularity run --cleanenv ${fn_sif} Rscript ${fn_R_benchmark} $dataset_name $num_fixels $num_subj $num_cores ${ModelArray_commitSHA} ${ModelArrayPaper_commitSHA} > ${fn_R_output}  2>&1
+
+	parent_id=$!  # get the pid of last execuated command
+fi
 
 echo "parent id = ${parent_id}"
 
