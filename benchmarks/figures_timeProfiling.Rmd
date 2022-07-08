@@ -37,6 +37,7 @@ f <- ggplot(t_modelarray, aes(constant, nsubj30)) +
   #              stackdir='center',
   #              dotsize = 0.1,
   #              fill="black") +
+  #ylim(c(0,3.7)) +
   theme_classic() + 
   theme(
     text = element_text(size = fontsize_theme, family="Arial"),
