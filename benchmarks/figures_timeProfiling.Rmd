@@ -1,0 +1,49 @@
+---
+title: "figures for runtime profiling"
+author: "Chenying Zhao"
+output: html_document
+---
+
+```{r}
+rm(list=ls())
+
+library(ggplot2)
+
+source("timeProfiling_readResults.R")
+```
+
+
+```{r, inputs}
+csv_foldernames_ModelArray <- list(ncores4 = "benchmark_time_foldernames_ModelArrayLM_ncores-4.csv")
+
+main.folder.modelarray <- "/home/chenying/Desktop/fixel_project/FixelArray_benchmark/runtime_profiling"
+
+ModelArray_commitSHA_short <- "0911c4f" 
+
+```
+
+```{r, analyze}
+t_modelarray <- table_timeResults(csv_foldernames_ModelArray$ncores4, main.folder.modelarray)
+t_modelarray <- t_modelarray / 3600   # change into hours
+t_modelarray$constant <- 1
+
+fontsize_theme <- 12
+
+f <- ggplot(t_modelarray, aes(constant, nsubj30)) +
+  geom_boxplot(outlier.shape = NA, width = 0.3) +    # as plotting the dots, no need to plot the outliers in boxplot
+  geom_point(position = position_jitter(w = 0.05, h = 0)) +
+  #geom_jitter(width = 0.05) +  # not sure if will jitter along y axis
+  # geom_dotplot(binaxis='y',
+  #              stackdir='center',
+  #              dotsize = 0.1,
+  #              fill="black") +
+  theme_classic() + 
+  theme(
+    text = element_text(size = fontsize_theme, family="Arial"),
+    axis.text.x = element_blank(),
+    axis.ticks = element_blank(),
+    aspect.ratio=5) + 
+  xlab("n = 30") + 
+  ylab("Time used (Hours)")
+f
+```
