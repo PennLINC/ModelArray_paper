@@ -12,15 +12,12 @@ This is the README file for benchmarking ModelArray.
 * The R script used for memory profiling ModelArray:
     * [memoryProfiling_ModelArray.lm.R](memoryProfiling_ModelArray.lm.R)
     * this requires a ModelArray commit SHA in [config.txt](config.txt)
-* Directly use the scripts to run memory profiling: 
+* Directly use the scripts to run memory profiling:
     * [run_wrapper_benchmark_ModelArray.lm.sh](run_wrapper_benchmark_ModelArray.lm.sh)
-    * [run_wrapper_benchmark_fixelcfestats.sh](run_wrapper_benchmark_fixelcfestats.sh)
 * which calls:
     * [wrapper_benchmark_ModelArray.lm.sh](wrapper_benchmark_ModelArray.lm.sh)
-    * [wrapper_benchmark_fixelcfestats.sh](wrapper_benchmark_fixelcfestats.sh)
 * which calls:
     * [benchmark_ModelArray.lm.sh](benchmark_ModelArray.lm.sh)
-    * [benchmark_fixelcfestats.sh](benchmark_fixelcfestats.sh)
 
 
 # Analyze memory benchmarking results and make plots
