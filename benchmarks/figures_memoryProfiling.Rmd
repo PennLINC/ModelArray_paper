@@ -29,7 +29,7 @@ if (all(load.packages.success) == FALSE) {
 source("memoryProfiling_plot.R")
 ```
 
-```{r functions for loading folders}
+```{r functions for loading folders, include=FALSE}
 # , include = FALSE
 
 #' To check if the loaded table of benchmarking foldernames are valid, for MRtrix's and ModelArray's
@@ -279,7 +279,7 @@ sort_foldernames <- function(foldernames.list, which_software, bywhat) {
 
 ```
 
-```{r functions for getting results}
+```{r functions for getting results, include=FALSE}
 # , include=FALSE
 
 # ++++++++++++++++++++++++= confirm if not finished, there will be warning/error when running and printed out!
@@ -352,51 +352,10 @@ results_modelarray <- function(folder.list, roof.num.child) {
 }
 
 
-
-#' @param folder.list A list of folder names (absolute path)
-results_mrtrix <- function(folder.list) {
-  myplots <- vector('list', length(folder.list))
-  rough.total.time.sec <- rep(0, length(folder.list))
-  
-  for (i_folder in 1:length(folder.list)) {
-    nthreads <- as.numeric(str_match(folder.list[i_folder], "nthreads-\\s*(.*?)\\s*.ftests")[2])
-    nsubj <- as.numeric(str_match(folder.list[i_folder], "nsubj-\\s*(.*?)\\s*.nthreads")[2])
-    nshuffles <- as.numeric(str_match(folder.list[i_folder], "nshuffles-\\s*(.*?)\\s*.vmware")[2])
-    
-    df <- readWssSingleParent(folder.list[i_folder])
-    df$RSS.GB. <- df$RSS.MB. / 1024
-    
-    max.RSS.MB. <- max(df$RSS.MB.)
-    df.max.RSS <- data.frame(nsubj = nsubj,
-                             nthreads = nthreads,
-                                max.RSS.MB. = max.RSS.MB.,
-                              max.RSS.GB. = max.RSS.MB./1024)
-    rough.total.time.sec[[i_folder]] <- max(df$Est.s.)
-    
-    
-    if (i_folder==1) {
-      summary.max <- df.max.RSS
-
-    } else {
-      summary.max <- rbind(summary.max, df.max.RSS)
-      
-    }
-    
-  
-    myplots[[i_folder]] <- timeSeriesPlot(df, unit.time = "second",
-                         str.title = paste0("MRtrix fixelcfestats: nsubj=", toString(nsubj),", nthreads=", toString(nthreads), ", nshuffles=", toString(nshuffles)) )
-    
-  }
-  
-  toReturn <- list(summary.max = summary.max,
-                     myplots = myplots,
-                   rough.total.time.sec = rough.total.time.sec)
-  return(toReturn)
-}
   
 ```
 
-```{r plots generator}
+```{r plots generator, include=FALSE}
 plotGen_modelarray_diffncores <- function(clean.summary.when.max_modelarray, 
                                     totals_modelarray,
                                     nsubj, roof.num.child, flag_legend_order_reverse,
@@ -448,81 +407,6 @@ plotGen_modelarray_diffncores <- function(clean.summary.when.max_modelarray,
   return(f)
 }
 
-plotGen_compare_diffncores <- function(totals_modelarray, totals_mrtrix,
-                                       nsubj,
-                                       color_mrtrix, color_modelarray,
-                                       delta_y = 0.5, ylim = c(0,52), flag_xlab=TRUE, flag_ylab = TRUE, flag_title=TRUE) {
-  
-  # adjust a bit before combination:
-  totals_modelarray_ready <- totals_modelarray
-  totals_modelarray_ready <- rename(totals_modelarray_ready, nparallel = ncore)   # new.col.name = old.col.name
-  totals_modelarray_ready <- rename(totals_modelarray_ready, ModelArray = total.RSS.GB.) 
-  totals_modelarray_ready <- select(totals_modelarray_ready, -total.RSS.MB.)   # remove a column
-  
-  totals_mrtrix_ready <- totals_mrtrix
-  totals_mrtrix_ready <- rename(totals_mrtrix_ready, nparallel = nthreads)
-  totals_mrtrix_ready <- rename(totals_mrtrix_ready, MRtrix = max.RSS.GB.)
-  totals_mrtrix_ready <- select(totals_mrtrix_ready, -max.RSS.MB.)
-  
-  # combine:
-  together_totals <- merge(totals_modelarray_ready, totals_mrtrix_ready, by = c("nsubj","nparallel"))
-  testthat::expect_equal(unique(together_totals[["nsubj"]]), nsubj) # there should be only one unique value of nparallel
-  together_totals <- together_totals %>% tidyr::pivot_longer(cols = c("ModelArray","MRtrix"), names_to="software", values_to="max.total.GB.")
-  together_totals$software <- factor(together_totals$software, 
-                                     levels = c("MRtrix","ModelArray") )
-  
-  
-  fontsize_text <- 3
-  fontsize_theme <- 9
-  theme.legend.key.size_value <- 3.5   # for plots made by ggpattern, this value is a bit smaller than plots by ggplots
-  theme.legend.key.size_unit <- "mm"
-  theme.legend.spacing.x_value <- 1
-  theme.legend.spacing.x_unit <- "mm"
-  # tried *.y but does not apply to ggpattern - there is no gap between legends squares in ggpattern...
-  
-  f <- ggplot(together_totals, aes(fill=software, y=max.total.GB., x=nparallel)) + 
-              ggpattern::geom_bar_pattern(position = position_dodge(width = 0.5), stat="identity", width=0.5,    # position="dodge"
-                                          #color="black",size=0.1,   # outline of the bars
-                                          aes(pattern_fill2=software),
-                                          pattern="gradient", pattern_fill=I(c("#CFCFCF"))) +    # , pattern_fill2=I(c(color_mrtrix, color_modelarray))
-                # ggpattern::geom_bar_pattern(position = position_dodge(width = 0.5), stat="identity", width=0.5,    # position="dodge"
-                #                             color="black",size=0.1,
-                #                             pattern_color="white", pattern_fill="white", pattern="stripe",
-                #                             pattern_spacing=0.03, pattern_density=0.02) +    
-              ggpattern::scale_pattern_fill2_manual(values= c(color_mrtrix, color_modelarray) ) +
-              # scale_fill_manual(values= c(color_mrtrix, color_modelarray) ) +
-              geom_text(position = position_dodge(width = 0.8), 
-                        aes(y=max.total.GB.+delta_y, label=sprintf("%0.2f", round(max.total.GB., digits=2)), hjust=0.4), 
-                        size = fontsize_text, angle=0, family = "Arial") + 
-              scale_x_continuous(breaks = c(totals_modelarray_ready$nparallel)) +
-              scale_y_continuous(expand = c(0, 0), limits = ylim) +   # expand = c(0,) & ylim[1]=0 --> x axis across at y=0
-              theme_classic() + 
-              # theme(aspect.ratio = 0.8,
-              #       text = element_text(size=15, family="Arial") ) +
-              theme(text = element_text(size = fontsize_theme, family="Arial"),
-                    legend.position="bottom",
-                    legend.key.size = unit(theme.legend.key.size_value, theme.legend.key.size_unit),
-                    legend.spacing.x = unit(theme.legend.spacing.x_value, theme.legend.spacing.x_unit))
-              
-              
-  if (flag_xlab == TRUE) {
-    f <- f + xlab("Number of threads (or CPU cores)") 
-  } else {
-    f <- f + xlab(NULL)
-  }
-  
-  if (flag_ylab == TRUE) {
-    f <- f + ylab("Max memory (GB)")
-  } else {
-    f <- f + ylab(NULL)
-  }
-  
-  if (flag_title == TRUE) {
-    f <- f + ggtitle(paste0("Comparison: Nsubj = ",toString(nsubj)))
-  }
-  
-  return(f)
-}
 
 plotGen_modelarray_diffsubj <- function(clean.summary.when.max_modelarray, totals_modelarray, 
                                         ncpus, flag_legend_order_reverse,
@@ -570,112 +454,11 @@ plotGen_modelarray_diffsubj <- function(clean.summary.when.max_modelarray, total
 }
 
 
-plotGen_mrtrix_diffsubj <- function(totals_mrtrix, ncpus, 
-                                    color_mrtrix, delta_y) {
-  
-  fontsize_text <- 3
-  fontsize_theme <- 9
-  theme.legend.key.size_value <- 4
-  theme.legend.key.size_unit <- "mm"
-  theme.legend.spacing.x_value <- 1
-  theme.legend.spacing.x_unit <- "mm"
-  
-  f <- ggplot(totals_mrtrix, aes(y = max.RSS.GB., x = nsubj)) +
-              geom_bar(stat="identity", width = 60, fill = color_mrtrix) +
-              geom_text(data = totals_mrtrix, aes(x = nsubj, y = max.RSS.GB. + delta_y, label = sprintf("%0.2f", round(max.RSS.GB., digits = 2)), fill = NULL),
-                        size = fontsize_text, angle = 0, family = "Arial") + 
-              scale_x_continuous(breaks = c(totals_mrtrix$nsubj)) +
-              scale_y_continuous(expand = c(0, 0)) +    # expand = c(0,) & ylim[1]=0 --> x axis across at y=0
-              theme_classic() +
-              theme(aspect.ratio = 0.8,
-                    text = element_text(size=fontsize_theme, family="Arial"),
-                    legend.key.size = unit(theme.legend.key.size_value, theme.legend.key.size_unit),
-                    legend.spacing.x = unit(theme.legend.spacing.x_value, theme.legend.spacing.x_unit))+
-              xlab("Number of participants") +
-              ylab("Max memory (GB)") +
-              ggtitle(paste0("MRtrix fixelcfestats: Nthreads = ", toString(ncpus)))
-  
-  return(f)
-}
 
-
-#' theme.legend.position: can be "right" or c(0.6,0.2)
-plotGen_compare_diffsubj <- function(totals_modelarray, totals_mrtrix, ncpus, 
-                                     color_mrtrix, color_modelarray, 
-                                     delta_y=2.5, ylim = c(0,52), angle_text = 30, theme.legend.position = "right", 
-                                     flag_ylab = TRUE, flag_title = TRUE) {
-  # adjust a bit before combination:
-  totals_modelarray_ready <- totals_modelarray
-  totals_modelarray_ready <- rename(totals_modelarray_ready, nparallel = ncore)   # new.col.name = old.col.name
-  totals_modelarray_ready <- rename(totals_modelarray_ready, ModelArray = total.RSS.GB.) 
-  totals_modelarray_ready <- select(totals_modelarray_ready, -total.RSS.MB.)   # remove a column
-  
-  totals_mrtrix_ready <- totals_mrtrix
-  totals_mrtrix_ready <- rename(totals_mrtrix_ready, nparallel = nthreads)
-  totals_mrtrix_ready <- rename(totals_mrtrix_ready, MRtrix = max.RSS.GB.)
-  totals_mrtrix_ready <- select(totals_mrtrix_ready, -max.RSS.MB.)
-  
-  # combine:
-  together_totals <- merge(totals_modelarray_ready, totals_mrtrix_ready, by = c("nsubj","nparallel"))
-  testthat::expect_equal(unique(together_totals[["nparallel"]]), ncpus) # there should be only one unique value of nparallel
-  together_totals <- together_totals %>% tidyr::pivot_longer(cols = c("ModelArray","MRtrix"), names_to="software", values_to="max.total.GB.")
-  together_totals$software <- factor(together_totals$software, 
-                                     levels = c("MRtrix","ModelArray") )
-  
-  
-  fontsize_text <- 3
-  fontsize_theme <- 9
-  theme.legend.key.size_value <- 3.5   # for plots made by ggpattern, this value is a bit smaller than plots by ggplots
-  theme.legend.key.size_unit <- "mm"
-  theme.legend.spacing.x_value <- 1
-  theme.legend.spacing.x_unit <- "mm"
-  xlim <- c(-20, max(totals_modelarray_ready$nsubj)+50)
-  
-  f <- ggplot(together_totals, aes(fill=software, y=max.total.GB., x=nsubj)) + 
-                ggpattern::geom_bar_pattern(position="dodge", stat="identity",    # in original geom_bar()
-                                          #color="black",size=0.1,   # outline of the bars
-                                          aes(pattern_fill2=software),
-                                          pattern="gradient", pattern_fill=I(c("#CFCFCF"))) +    # , pattern_fill2=I(c(color_mrtrix, color_modelarray))
-                # geom_bar(position="dodge", stat="identity") + 
-                ggpattern::scale_pattern_fill2_manual(values= c(color_mrtrix, color_modelarray) ) +
-                #scale_fill_manual(values= c(color_mrtrix, color_modelarray) ) +
-                geom_text(position = position_dodge(width = 100),     # ggrepel::geom_text_repel()
-                          #position = position_jitterdodge(dodge.width = 50, jitter.width = 20), 
-                          aes(y=max.total.GB.+delta_y, label=sprintf("%0.2f", round(max.total.GB., digits=2)), hjust=0.4),   # , hjust=0.3 # , hjust="middle"
-                          size=fontsize_text, angle=angle_text, family = "Arial" ) + 
-                scale_x_continuous(breaks = c(totals_modelarray_ready$nsubj),
-                                  limits=xlim) + 
-                scale_y_continuous(expand = c(0, 0), limits = ylim) +    # expand = c(0,) & ylim[1]=0 --> x axis across at y=0
-                theme_classic() + 
-                theme(#aspect.ratio = 1/2,
-                      text = element_text(size=fontsize_theme, family="Arial"),
-                      legend.position = theme.legend.position,
-                      legend.key.size = unit(theme.legend.key.size_value, theme.legend.key.size_unit),
-                      legend.spacing.x = unit(theme.legend.spacing.x_value, theme.legend.spacing.x_unit)) +
-                xlab("Number of participants")
-                
-  
-  if (class(theme.legend.position) == "numeric") {  # if within the plot
-    f <- f + guides(color=guide_legend(override.aes=list(fill=NA)))   # change the legend's background to transparent
-  }
-  
-  if (flag_ylab == TRUE) {
-    f <- f + ylab("Max memory (GB)")
-  } else {
-    f <- f + ylab(NULL)
-  }
-  
-  if (flag_title == TRUE) {
-    f <- f + ggtitle(paste0("Comparison: Nthreads (Ncores) = ",toString(ncpus)))
-  }
-
-  return(f)
-}
 ```
 ## set up: loading .xlsx of benchmarking folder names:
 ```{r inputs}
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-csv_foldernames_MRtrix <- "benchmark_memory_foldernames_MRtrixLM.csv"
 csv_foldernames_ModelArray <- "benchmark_memory_foldernames_ModelArrayLM.csv"
 
 # used by benchmarking for ModelArray.lm():
@@ -683,21 +466,21 @@ ModelArray_commitSHA_short <- "0911c4f"
 #ModelArrayPaper_commitSHA_short <- "94ed85f"
 
 idx_repeat_modelarray <- "median"  # +++++++++++++++++= 1,2,3 or "median"
-idx_repeat_mrtrix <- "median"  # +++++++++++++++++++ 1,2,3 or "median"
 
-flag_where_now <- "vmware"  # where currently this script is running
+flag_where_now <- "mac"  # where currently this script is running
 
 # for ggplot:
 color_parent_process <- "#737373"
 color_children_process <- c("#006E2D", "#248B46", "#40AB5D", "#71C574")
-color_mrtrix <- "#707070"   # #909090 will be lighter gray
 color_modelarray <- "#248B46"
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 if (flag_where_now == "vmware") {
   main.folder.modelarray <- "/home/chenying/Desktop/fixel_project/FixelArray_benchmark"
-  main.folder.mrtrix <- "/home/chenying/Desktop/fixel_project/data/data_from_josiane/for_fixelcfestats/stats_FDC"
   main.folder.figures <- "/home/chenying/Desktop/fixel_project/ModelArray_paper/figures"
+} else if (flag_where_now == "mac") {
+  main.folder.modelarray <- "/Users/chenyzh/Desktop/Research/Satterthwaite_Lab/fixel_project/FixelArray_benchmark"
+  main.folder.figures <- "/Users/chenyzh/Desktop/Research/Satterthwaite_Lab/fixel_project/ModelArray_paper/figures"
 }
 
 t_modelarray <- read.csv(csv_foldernames_ModelArray)
@@ -708,22 +491,13 @@ nrepeat.total.modelarray <- check_table_foldernames(t_modelarray, which_software
 t_modelarray <- get_maxMemory_N_medianRepeat(t_modelarray, "modelarray", nrepeat.total.modelarray, 
                                          main.folder.modelarray, roof.num.child=4)
 
-t_mrtrix <- read.csv(csv_foldernames_MRtrix)
-nrepeat.total.mrtrix <- check_table_foldernames(t_mrtrix, which_software="mrtrix",nshuffles = 100)
-t_mrtrix <- get_maxMemory_N_medianRepeat(t_mrtrix, "mrtrix", nrepeat.total.mrtrix, 
-                                         main.folder.mrtrix, roof.num.child=NULL)
-
-
 
 str_repeat_modelarray <- ifelse(idx_repeat_modelarray == "median",
                                 "repeat_median",    # when taking the median repeat
                                 paste0("repeat", toString(idx_repeat_modelarray)))  # e.g. repeat2
-str_repeat_mrtrix <- ifelse(idx_repeat_mrtrix == "median",
-                                "repeat_median",    # when taking the median repeat
-                                paste0("repeat", toString(idx_repeat_mrtrix)))  # e.g. repeat2  
 
-message(paste0("Using results from repeat #",toString(idx_repeat_modelarray), " for ModelArray, and ",
-               "results from repeat #", toString(idx_repeat_mrtrix), " for MRtrix"))
+message(paste0("Using results from repeat #",toString(idx_repeat_modelarray), " for ModelArray"))
+              
 ```
 
 ## roughly how long it takes when memory profiling is on
@@ -738,12 +512,6 @@ out_modelarray <- results_modelarray(folders.list.modelarray, roof.num.child = r
 rough.total.time.sec.modelarray <- out_modelarray$rough.total.time.sec
 t_modelarray$rough.total.time.sec <- rough.total.time.sec.modelarray 
 
-foldernames.list.mrtrix <- t_mrtrix[[str_repeat_mrtrix]]
-folders.list.mrtrix <- file.path(main.folder.mrtrix, foldernames.list.mrtrix)
-
-out_mrtrix <- results_mrtrix(folders.list.mrtrix)
-rough.total.time.sec.mrtrix <- out_mrtrix$rough.total.time.sec
-t_mrtrix$rough.total.time.sec <- rough.total.time.sec.mrtrix 
 ```
 
 ## number of participant = 30, different number of CPU cores (threads)
@@ -767,17 +535,6 @@ totals_modelarray
 summary.when.max_modelarray
 
 
-foldernames.list.mrtrix <- t_mrtrix[[str_repeat_mrtrix]][t_mrtrix$nsubj == nsubj]
-foldernames.list.mrtrix <- sort_foldernames(foldernames.list.mrtrix, "mrtrix","ncpus")
-folders.list.mrtrix <- file.path(main.folder.mrtrix,  foldernames.list.mrtrix)
-foldernames.list.mrtrix
-
-theresults <- results_mrtrix(folders.list.mrtrix)
-totals_mrtrix <- theresults$summary.max
-totals_mrtrix
-#theresults$myplots[[4]]
-
-
 ### figure a: ModelArray.lm()
 f_modelarray <- vector("list", length = 2)  # create an empty list
 f_modelarray[[1]] <- plotGen_modelarray_diffncores(clean.summary.when.max_modelarray, totals_modelarray, 
@@ -787,15 +544,6 @@ f_modelarray[[1]] <- plotGen_modelarray_diffncores(clean.summary.when.max_modela
 
 f_modelarray[[1]]
 
-
-### figure b: comparison
-f_compare <- vector("list", length = 2)  # create an empty list
-f_compare[[1]] <- plotGen_compare_diffncores(totals_modelarray, totals_mrtrix,
-                                       nsubj = nsubj,
-                                       color_mrtrix, color_modelarray,
-                                       delta_y = 2.5, ylim = ylim_compare, flag_title=FALSE)
-
-f_compare[[1]]
 
 ```
 
@@ -818,17 +566,6 @@ totals_modelarray
 summary.when.max_modelarray
 
 
-foldernames.list.mrtrix <- t_mrtrix[[str_repeat_mrtrix]][t_mrtrix$nsubj == nsubj]
-foldernames.list.mrtrix <- sort_foldernames(foldernames.list.mrtrix, "mrtrix", "ncpus")
-folders.list.mrtrix <- file.path(main.folder.mrtrix,  foldernames.list.mrtrix)
-foldernames.list.mrtrix
-
-theresults <- results_mrtrix(folders.list.mrtrix)
-totals_mrtrix <- theresults$summary.max
-totals_mrtrix
-#theresults$myplots[[4]]
-
-
 ### figure a: ModelArray.lm()
 f_modelarray[[2]] <- plotGen_modelarray_diffncores(clean.summary.when.max_modelarray, totals_modelarray, 
                                               nsubj = nsubj, roof.num.child = roof.num.child,
@@ -838,20 +575,10 @@ f_modelarray[[2]] <- plotGen_modelarray_diffncores(clean.summary.when.max_modela
 f_modelarray[[2]]
 
 
-### figure b: comparison
-f_compare[[2]] <- plotGen_compare_diffncores(totals_modelarray, totals_mrtrix,
-                                       nsubj = nsubj,
-                                       color_mrtrix, color_modelarray,
-                                       delta_y = 2.5,
-                                       ylim = ylim_compare, flag_ylab = FALSE, flag_title=FALSE)
-
-f_compare[[2]]
-
-
 
 ### all panels together:
 ## option 1: merging 4 panels at once:
-p_together <- f_modelarray[[1]]  + f_modelarray[[2]] + f_compare[[1]] + f_compare[[2]] + plot_layout(nrow=2, heights = unit(c(50,50), c('mm','mm')), widths = unit(c(48, 48), c('mm','mm')), guides = 'collect') + plot_annotation(tag_levels = 'A') & theme(legend.position = 'right', plot.margin = margin(0, 0, 1, 0, "mm") ) 
+p_together <- f_modelarray[[1]]  + f_modelarray[[2]] + plot_layout(nrow=1, heights = unit(c(50), c('mm')), widths = unit(c(48, 48), c('mm','mm')), guides = 'collect') + plot_annotation(tag_levels = 'A') & theme(legend.position = 'right', plot.margin = margin(0, 0, 1, 0, "mm") ) 
 
 # , legend.justification = "left"
 # p_together <- (f_modelarray[[1]]  + f_modelarray[[2]])/(f_compare[[1]] + f_compare[[2]]) + plot_layout(nrow=2, heights = unit(c(50,50), c('mm','mm')), widths = unit(c(50,50,60,60), c('mm','mm','mm','mm')), guides = 'collect') & theme(legend.position = 'bottom', legend.justification = "left")
@@ -865,8 +592,8 @@ p_together <- f_modelarray[[1]]  + f_modelarray[[2]] + f_compare[[1]] + f_compar
 list_ext_figure <- c("jpeg", "svg")
 for (ext_figure in list_ext_figure) {
   ggsave(file.path(main.folder.figures,
-                 paste0("figure_ncore-diff_compare.", ext_figure) ),
-       plot = p_together, device = ext_figure, dpi = 300, width = 140, height = 135, units = "mm")   # 
+                 paste0("figure_ncore-diff_ModelArrayLM.", ext_figure) ),
+       plot = p_together, device = ext_figure, dpi = 300, width = 140, height = 70, units = "mm")   # 
 }
 
 ```
@@ -889,59 +616,32 @@ clean.summary.when.max_modelarray <- out_modelarray$clean.summary.when.max
 totals_modelarray
 summary.when.max_modelarray
 
-foldernames.list.mrtrix <- t_mrtrix[[str_repeat_mrtrix]][t_mrtrix$nthreads == ncpus]
-foldernames.list.mrtrix <- sort_foldernames(foldernames.list.mrtrix, "mrtrix", "nsubj")
-folders.list.mrtrix <- file.path(main.folder.mrtrix,  foldernames.list.mrtrix)
-foldernames.list.mrtrix
-
-out_mrtrix <- results_mrtrix(folders.list.mrtrix)
-totals_mrtrix <- out_mrtrix$summary.max
-totals_mrtrix
-#out_mrtrix$myplots[[6]]
-
 
 ### figure a: ModelArray itself
 f_modelarray <- plotGen_modelarray_diffsubj(clean.summary.when.max_modelarray, totals_modelarray, 
                                             ncpus, flag_legend_order_reverse,
                                             color_parent_process, color_children_process,
                                             ylim = ylim_modelarray, 
-                                            angle_text=0, flag_xlab=FALSE, flag_title = FALSE)
+                                            angle_text=0, flag_xlab=TRUE, flag_title = FALSE)
 
 f_modelarray
 
-### figure b: MRtrix itself
-delta_y <- 0.03 * max(totals_mrtrix$max.RSS.GB.)
-f_mrtrix <- plotGen_mrtrix_diffsubj(totals_mrtrix, ncpus, 
-                                    color_mrtrix, delta_y = delta_y)
-f_mrtrix
-
-### figure c: comparing MRtrix vs ModelArray
-f_compare <- plotGen_compare_diffsubj(totals_modelarray, totals_mrtrix, ncpus, 
-                                       color_mrtrix, color_modelarray, 
-                                       delta_y=2.5, ylim= ylim_compare, angle_text = 0, theme.legend.position = "right",   # c(0.2,0.8)
-                                      flag_ylab = TRUE, flag_title = FALSE)
-f_compare
 
 
 ### merge panels:
 
 #layout <- "\n#AB\nCCC\n"  # +guide_area() + plot_layout(design = layout, )
 
-p_together <- f_modelarray + f_compare + plot_layout(nrow=2, heights = unit(c(50,50), c('mm','mm')), widths = unit(c(100), c('mm')), guides = 'collect') + plot_annotation(tag_levels = 'A') & theme(legend.position = 'right', plot.margin = margin(0, 0, 1, 0, "mm"))   # 
+p_together <- f_modelarray + plot_layout(nrow=1, heights = unit(c(50), c('mm')), widths = unit(c(100), c('mm')), guides = 'collect') + theme(legend.position = 'right', plot.margin = margin(0, 0, 1, 0, "mm"))   # 
 final_width <- 140
-final_height <- 125
+final_height <- 65
 
-
-# ## or, in a row:   # with similar bar sizes as figure 2, cannot fit into 140mm final width.....
-# p_together <- f_modelarray  + f_compare + plot_layout(heights = unit(c(50), c('mm')), widths = unit(c(55, 80), c('mm')), guides = 'collect') & theme(legend.position = 'bottom', legend.justification = "left")
-# final_width <- 140
-# final_height <- 80
 
 ### save the figure:
 list_ext_figure <- c("jpeg", "svg")
 for (ext_figure in list_ext_figure) {
   ggsave(file.path(main.folder.figures,
-                 paste0("figure_nsubj-diff_compare.", ext_figure) ),
+                 paste0("figure_nsubj-diff_ModelArrayLM.", ext_figure) ),
        plot = p_together, device = ext_figure, dpi = 300, width = final_width, height = final_height, units = "mm")   # 
 }
 ```
